@@ -99,9 +99,10 @@ class DataBaseHelper(context: Context) :
                 val name = cursor.getString(nameColumn);
                 val artist = cursor.getString(artistColumn) ?: context.getString(R.string.notFound);
                 val genre = cursor.getString(genreColumn) ?: context.getString(R.string.notFound);
-                val release = cursor.getString(relDateColumn) ?: context.getString(R.string.notFound);
+                var release = cursor.getString(relDateColumn) ?: context.getString(R.string.notFound);
                 if (release != context.getString(R.string.notFound)) {
-
+                    release = java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.getDefault())
+                        .format(java.util.Date(cursor.getLong(relDateColumn) * 1000L));
                 }
 
                 val contentUri: Uri = ContentUris.withAppendedId(
@@ -109,7 +110,7 @@ class DataBaseHelper(context: Context) :
                     id.toLong()
                 );
 
-                mp3List += myAudio(id, name, artist, genre, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI.toString(), release);
+                mp3List += myAudio(id, name, artist, genre, contentUri.toString(), release);
             }
         }
         return mp3List;

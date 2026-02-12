@@ -1,6 +1,9 @@
 package com.example.androidprojektaudioplayer
 
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.MediaPlayer
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,12 +19,27 @@ class MyAdapterAudio(private val audioList: MutableList<myAudio>,
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.itemView.isLongClickable = true;
+        //holder.itemView.isLongClickable = true;
         val currentTrack = audioList[position];
         holder.tvTitle.text = currentTrack.audioTitle;
         holder.tvGenre.text = currentTrack.audioGenre;
         holder.tvArtist.text = currentTrack.audioArtist;
         holder.tvDate.text = currentTrack.audioRelDate;
+
+        holder.itemView.setOnClickListener { run {
+            val myUri: Uri = Uri.parse(currentTrack.audioPath);
+            val mediaPlayer: MediaPlayer = MediaPlayer().apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build()
+                );
+                setDataSource(contextExt, myUri);
+                prepare();
+                start();
+            }
+        } }
     }
 
     override fun getItemCount(): Int {
