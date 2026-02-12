@@ -1,0 +1,23 @@
+1) MediaStore für die Suche nach AUDIO Medien im Default Musik Ordner
+
+2) ON DELETE CASCADE in SQL, um zusammenhängende Referenzen (Foreign Keys) in der Zwischentabelle zu löschen
+
+3) override onOpen verwenden, weil ForeignKeys außerhalb des onCreates aktiviert werden müssen
+
+4) context.getString() um die Strings aus values/string.xml zu bekommen
+
+5) MediaPlayer für Musik
+val mediaPlayer: MediaPlayer = MediaPlayer().apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build()
+                );
+                setDataSource(contextExt, myUri);
+                prepare();
+                start();
+            }
+
+6) Merken, dass Logik nicht im Adapter passiert, sondern in der MainActivity.
+Adapter sind nur für Darstellung da. Callbacks verwenden!!!
