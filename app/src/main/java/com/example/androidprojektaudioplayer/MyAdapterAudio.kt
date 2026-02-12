@@ -7,10 +7,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class MyAdapter(private val audioList: MutableList<myAudio>,
-    private val contextExt: Context
-): RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyAdapter.MyViewHolder {
+class MyAdapterAudio(private val audioList: MutableList<myAudio>,
+                     private val contextExt: Context
+): RecyclerView.Adapter<MyAdapterAudio.MyViewHolder>() {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyAdapterAudio.MyViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.audiocard, parent, false);
         return MyViewHolder(view, contextExt);
     }
