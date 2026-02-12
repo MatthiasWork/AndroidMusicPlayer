@@ -2,6 +2,9 @@ package com.example.androidprojektaudioplayer
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.media.AudioAttributes
+import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +18,8 @@ import com.example.androidprojektaudioplayer.databinding.ActivityMainBinding
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var myDB: DataBaseHelper
+    private var mediaPlayer: MediaPlayer = MediaPlayer()
+    private var currentUri: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,22 +39,47 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this,
                 arrayOf(Manifest.permission.READ_MEDIA_AUDIO), 1)
         } else {
-            ladeAudioDateien();
+            ladeAudioDateien()
         }
     }
 
+    //Methode um die Berechtigungen zu überprüfen
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 1 && grantResults.isNotEmpty()
             && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            ladeAudioDateien();
+            ladeAudioDateien()
         }
     }
 
     //Methode, für wenn die MainActivity wieder im Vordergrund ist
     override fun onResume() {
         super.onResume()
-        ladeAudioDateien();
+        ladeAudioDateien()
+    }
+
+    //Methode, um den MediaPlayer freizugeben wenn die Activity geschlossen wird
+    override fun onDestroy() {
+        super.onDestroy()
+        mediaPlayer.release()
+    }
+
+    //Methode, um eine Audiodatei abzuspielen
+    fun playTrack(track: myAudio) {
+        if (mediaPlayer.isPlaying && currentUri == track.audioPath) {
+            return
+        }
+        mediaPlayer.reset()
+        currentUri = track.audioPath
+        mediaPlayer.setAudioAttributes(
+            AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .build()
+        )
+        mediaPlayer.setDataSource(this, Uri.parse(track.audioPath))
+        mediaPlayer.prepare()
+        mediaPlayer.start()
     }
 
     //Methode, um die Audiodateien zu laden
@@ -58,11 +88,13 @@ class MainActivity : AppCompatActivity() {
         myDB.removeDeletedAudios(defaultList.map { it.audioID })
         for (audio in defaultList) {
             if (!myDB.audioExists(audio.audioID)) {
-                myDB.addAudioToDatabase(audio);
+                myDB.addAudioToDatabase(audio)
             }
         }
-        binding.rvAudioTracks.layoutManager = LinearLayoutManager(this);
-        val adapter = MyAdapterAudio(defaultList, this)
-        binding.rvAudioTracks.adapter = adapter;
+        binding.rvAudioTracks.layoutManager = LinearLayoutManager(this)
+        val adapter = MyAdapterAudio(defaultList, this) { track ->
+            playTrack(track)
+        }
+        binding.rvAudioTracks.adapter = adapter
     }
 }
