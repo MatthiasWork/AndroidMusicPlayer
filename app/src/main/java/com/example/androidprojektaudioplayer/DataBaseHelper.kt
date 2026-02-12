@@ -95,10 +95,10 @@ class DataBaseHelper(context: Context) :
 
             while (cursor.moveToNext()) {
                 val id = cursor.getInt(idColumn);
-                val name = cursor.getString(nameColumn);
-                val artist = cursor.getString(artistColumn);
-                val genre = cursor.getString(genreColumn);
-                val release = cursor.getString(relDateColumn);
+                val name = cursor.getString(nameColumn) ?: ""
+                val artist = cursor.getString(artistColumn) ?: ""
+                val genre = cursor.getString(genreColumn) ?: ""
+                val release = cursor.getString(relDateColumn) ?: ""
 
                 val contentUri: Uri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
