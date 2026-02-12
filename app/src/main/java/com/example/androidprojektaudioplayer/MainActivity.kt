@@ -6,6 +6,9 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.widget.SeekBar
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -20,6 +23,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var myDB: DataBaseHelper
     private var mediaPlayer: MediaPlayer = MediaPlayer()
     private var currentUri: String = ""
+    private val handler = Handler(Looper.getMainLooper())
+
+    // Runnable der die SeekBar jede Sekunde aktualisiert
+    private val updateSeekBar = object : Runnable {
+        override fun run() {
+            if (mediaPlayer.isPlaying) {
+                binding.sbProgress.progress = mediaPlayer.currentPosition
+            }
+            handler.postDelayed(this, 1000)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +47,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         myDB = DataBaseHelper(this)
+
+        // SeekBar Listener - wenn Nutzer die Position ändert
+        binding.sbProgress.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                // Nur reagieren wenn der Nutzer selbst zieht, nicht wenn der Handler aktualisiert
+                if (fromUser) {
+                    mediaPlayer.seekTo(progress)
+                }
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_AUDIO)
             != PackageManager.PERMISSION_GRANTED
@@ -69,6 +95,7 @@ class MainActivity : AppCompatActivity() {
     //Methode, um den MediaPlayer freizugeben wenn die Activity geschlossen wird
     override fun onDestroy() {
         super.onDestroy()
+        handler.removeCallbacks(updateSeekBar)
         mediaPlayer.release()
     }
 
@@ -86,11 +113,17 @@ class MainActivity : AppCompatActivity() {
                 .build()
         )
         mediaPlayer.setDataSource(this, Uri.parse(track.audioPath))
-        mediaPlayer.prepare();
-        mediaPlayer.start();
+        mediaPlayer.prepare()
+        mediaPlayer.start()
 
-        binding.tvTitleText.text = track.audioTitle;
-        binding.tvSubTitleText.text = track.audioArtist;
+        // SeekBar auf neuen Track setzen
+        binding.sbProgress.max = mediaPlayer.duration
+        binding.sbProgress.progress = 0
+        handler.removeCallbacks(updateSeekBar)
+        handler.post(updateSeekBar)
+
+        binding.tvTitleText.text = track.audioTitle
+        binding.tvSubTitleText.text = track.audioArtist
     }
 
     //Methode, um die Audiodateien zu laden
