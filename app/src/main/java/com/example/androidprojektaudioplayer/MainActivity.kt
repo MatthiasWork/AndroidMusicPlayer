@@ -9,6 +9,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.androidprojektaudioplayer.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -46,11 +47,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     //Methode, für wenn die MainActivity wieder im Vordergrund ist
-//    override fun onResume() {
-//        super.onResume()
-//        refreshList()
-//    }
+    override fun onResume() {
+        super.onResume()
+        ladeAudioDateien();
+    }
 
+    //Methode, um die Audiodateien zu laden
     fun ladeAudioDateien() {
         val defaultList: MutableList<myAudio> = myDB.getAllMp3Files(this) as MutableList<myAudio>
         myDB.removeDeletedAudios(defaultList.map { it.audioID })
@@ -59,9 +61,8 @@ class MainActivity : AppCompatActivity() {
                 myDB.addAudioToDatabase(audio);
             }
         }
-    }
-
-    fun refreshList() {
-
+        binding.rvAudioTracks.layoutManager = LinearLayoutManager(this);
+        val adapter = MyAdapterAudio(defaultList, this)
+        binding.rvAudioTracks.adapter = adapter;
     }
 }
