@@ -1,2 +1,3 @@
 1) MediaStore für die Suche nach AUDIO Medien im Default Musik Ordner
 2) ON DELETE CASCADE in SQL, um zusammenhängende Referenzen (Foreign Keys) in der Zwischentabelle zu löschen
+3) override onOpen verwenden, weil ForeignKeys außerhalb des onCreates aktiviert werden müssen

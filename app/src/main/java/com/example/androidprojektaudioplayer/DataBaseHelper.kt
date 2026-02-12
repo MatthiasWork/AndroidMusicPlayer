@@ -52,13 +52,12 @@ class DataBaseHelper(context: Context) :
                     ", FOREIGN KEY($FKPK_PLAYLISTAUDIO) REFERENCES $TABLE_PLAYLIST($PLAYLIST_ID) ON DELETE CASCADE)";
 
         if (db is SQLiteDatabase) {
+
             db.execSQL(sqlStringCreateTableAudio);
 
             db.execSQL(sqlStringCreateTablePlaylist);
 
             db.execSQL(sqlStringCreateTableInter);
-
-            db.setForeignKeyConstraintsEnabled(true);
 
             val container: ContentValues = ContentValues();
             container.put(PLAYLIST_TITLE, "Alle");
@@ -117,6 +116,14 @@ class DataBaseHelper(context: Context) :
     //Methode zum Erneuern der db Version
     //Nicht verwendet
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+    }
+
+    //Methode, um ForeignKeys zu aktivieren
+    override fun onOpen(db: SQLiteDatabase?) {
+        super.onOpen(db)
+        if (db is SQLiteDatabase) {
+            db.setForeignKeyConstraintsEnabled(true)
+        }
     }
 
     //region CRUD für Audio
