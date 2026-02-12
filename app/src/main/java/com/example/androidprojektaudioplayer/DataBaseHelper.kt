@@ -60,10 +60,6 @@ class DataBaseHelper(context: Context) :
 
             db.execSQL(sqlStringCreateTableInter);
 
-            val container: ContentValues = ContentValues();
-            container.put(PLAYLIST_TITLE, "Alle");
-            db.insert(TABLE_PLAYLIST, null, container);
-
         } else {
             Log.e(TAG, "${this.javaClass.name} Fehler bei der Ausfuehrung von SQL Query");
         }
@@ -132,6 +128,29 @@ class DataBaseHelper(context: Context) :
     }
 
     //region CRUD für Audio
+
+    //Methode, um alle Audiodateien aus der Datenbank zu holen
+    fun getAllAudiosFromDB(): List<myAudio> {
+        val audioList = mutableListOf<myAudio>();
+        val query = "SELECT * FROM $TABLE_AUDIO";
+        val db = readableDatabase;
+        val cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                val audio = myAudio();
+                audio.audioID = cursor.getInt(0);
+                audio.audioTitle = cursor.getString(1);
+                audio.audioArtist = cursor.getString(2);
+                audio.audioGenre = cursor.getString(3);
+                audio.audioRelDate = cursor.getString(4);
+                audio.audioPath = cursor.getString(5);
+                audioList.add(audio)
+            } while (cursor.moveToNext())
+        }
+        cursor.close();
+        return audioList;
+    }
 
     //Methode, um die nächste verfügbare ID aus der Datenbank zu bekommen
     fun getNextAvailableAudioID(): Int {
