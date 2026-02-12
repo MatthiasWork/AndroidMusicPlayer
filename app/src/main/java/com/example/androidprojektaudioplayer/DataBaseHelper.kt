@@ -91,7 +91,7 @@ class DataBaseHelper(context: Context) :
     }
 
     //Methode für das Löschen eines Eintrags aus der Datenbank
-    fun deleteEntry(track: myAudio): Boolean {
+    fun deleteAudioEntry(track: myAudio): Boolean {
         val deleteString: String = "DELETE FROM ${TABLE_AUDIO} WHERE ${AUDIO_ID} = ${track.audioID}";
         val db = writableDatabase;
         try {
@@ -103,7 +103,7 @@ class DataBaseHelper(context: Context) :
     }
 
     //Methode für das Bearbeiten eines Eintrags aus der Datenbank
-    fun editEntry(track: myAudio): Boolean {
+    fun editAudioEntry(track: myAudio): Boolean {
         val editString: String = "UPDATE ${TABLE_AUDIO} SET ${AUDIO_TITLE} = '${track.audioTitle}', ${AUDIO_ARTIST} = '${track.audioArtist}'" +
                 ", ${AUDIO_RELDATE} = '${track.audioRelDate}', ${AUDIO_GENRE} = '${track.audioGenre}', ${AUDIO_SAVEPATH} = '${track.audioPath}' WHERE ${AUDIO_ID} = '${track.audioID}'";
         val db = writableDatabase;
@@ -130,7 +130,39 @@ class DataBaseHelper(context: Context) :
         return maxID + 1;
     }
 
+    //Methode für das Hinzufügen eines Eintrags zur Datenbank
+    fun addPlaylistToDatabase(myPlaylist: myPlaylist) {
+        val db: SQLiteDatabase = writableDatabase;
+        val container: ContentValues = ContentValues();
+        container.put(PLAYLIST_ID, myPlaylist.playlistID);
+        container.put(PLAYLIST_TITLE, myPlaylist.playlistTitle);
 
+        db.insert(TABLE_PLAYLIST, null, container);
+    }
+
+    //Methode für das Löschen eines Eintrags aus der Datenbank
+    fun deletePlaylistEntry(playList: myPlaylist): Boolean {
+        val deleteString: String = "DELETE FROM ${TABLE_PLAYLIST} WHERE ${PLAYLIST_ID} = ${playList.playlistID}";
+        val db = writableDatabase;
+        try {
+            db.execSQL(deleteString);
+        } catch (ex: Exception) {
+            Log.e(TAG, "Fehler beim Loeschen des Eintrags ${playList.playlistTitle} aus Datenbank \n $ex")
+        }
+        return true;
+    }
+
+    //Methode für das Bearbeiten eines Eintrags aus der Datenbank
+    fun editPlaylistEntry(playList: myPlaylist): Boolean {
+        val editString: String = "UPDATE ${TABLE_AUDIO} SET ${PLAYLIST_TITLE} = '${playList.playlistTitle}' WHERE ${PLAYLIST_ID} = '${playList.playlistID}'";
+        val db = writableDatabase;
+        try {
+            db.execSQL(editString);
+        } catch (ex: Exception) {
+            Log.e(TAG, "Fehler beim Aendern des Eintrags ${playList.playlistTitle} aus Datenbank \n $ex");
+        }
+        return true;
+    }
     //endregion
 
 }
