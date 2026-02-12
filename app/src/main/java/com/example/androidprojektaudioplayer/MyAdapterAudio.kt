@@ -18,6 +18,10 @@ class MyAdapterAudio(private val audioList: MutableList<myAudio>,
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         holder.itemView.isLongClickable = true;
         val currentTrack = audioList[position];
+        holder.tvTitle.text = currentTrack.audioTitle;
+        holder.tvGenre.text = currentTrack.audioGenre;
+        holder.tvArtist.text = currentTrack.audioArtist;
+        holder.tvDate.text = currentTrack.audioRelDate;
     }
 
     override fun getItemCount(): Int {

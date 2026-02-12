@@ -1,10 +1,13 @@
 package com.example.androidprojektaudioplayer
 
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.net.Uri
+import android.provider.MediaStore
 import android.util.Log
 
 private val TAG: String = "SoundioMusikPlayer"
@@ -28,9 +31,9 @@ private val PLAYLIST_TITLE: String = "PlaylistTitle";
 //endregion
 
 //region Zwischentabelle
-private val TABLE_PLAYAUDIO: String ="AudioTrackPlaylist";
+private val TABLE_PLAYAUDIO: String = "AudioTrackPlaylist";
 private val FKPK_AUDIOPLAYLIST: String = "AudioPlaylist";
-private val FKPK_PLAYLISTAUDIO: String ="PlaylistAudio";
+private val FKPK_PLAYLISTAUDIO: String = "PlaylistAudio";
 //endregion
 
 class DataBaseHelper(context: Context) :
@@ -39,28 +42,81 @@ class DataBaseHelper(context: Context) :
         val sqlStringCreateTableAudio: String =
             "CREATE TABLE $TABLE_AUDIO($AUDIO_ID INTEGER PRIMARY KEY, $AUDIO_TITLE TEXT, $AUDIO_ARTIST TEXT NULL, $AUDIO_GENRE TEXT NULL, $AUDIO_RELDATE TEXT NULL, $AUDIO_SAVEPATH TEXT);"
 
-        val sqlStringCreateTablePlaylist: String = "CREATE TABLE $TABLE_PLAYLIST($PLAYLIST_ID INTEGER PRIMARY KEY, $PLAYLIST_TITLE TEXT)";
+        val sqlStringCreateTablePlaylist: String =
+            "CREATE TABLE $TABLE_PLAYLIST($PLAYLIST_ID INTEGER PRIMARY KEY, $PLAYLIST_TITLE TEXT)";
 
-        val sqlStringCreateTableInter: String = "CREATE TABLE $TABLE_PLAYAUDIO($FKPK_AUDIOPLAYLIST INTEGER, $FKPK_PLAYLISTAUDIO INTEGER, " +
-                "PRIMARY KEY($FKPK_AUDIOPLAYLIST, $FKPK_PLAYLISTAUDIO), " +
-                "FOREIGN KEY($FKPK_AUDIOPLAYLIST) REFERENCES $TABLE_AUDIO($AUDIO_ID)" +
-                ", FOREIGN KEY($FKPK_PLAYLISTAUDIO) REFERENCES $TABLE_PLAYLIST($PLAYLIST_ID))";
+        val sqlStringCreateTableInter: String =
+            "CREATE TABLE $TABLE_PLAYAUDIO($FKPK_AUDIOPLAYLIST INTEGER, $FKPK_PLAYLISTAUDIO INTEGER, " +
+                    "PRIMARY KEY($FKPK_AUDIOPLAYLIST, $FKPK_PLAYLISTAUDIO), " +
+                    "FOREIGN KEY($FKPK_AUDIOPLAYLIST) REFERENCES $TABLE_AUDIO($AUDIO_ID) ON DELETE CASCADE" +
+                    ", FOREIGN KEY($FKPK_PLAYLISTAUDIO) REFERENCES $TABLE_PLAYLIST($PLAYLIST_ID) ON DELETE CASCADE)";
 
         if (db is SQLiteDatabase) {
             db.execSQL(sqlStringCreateTableAudio);
+
             db.execSQL(sqlStringCreateTablePlaylist);
+
             db.execSQL(sqlStringCreateTableInter);
+
             db.setForeignKeyConstraintsEnabled(true);
+
+            val container: ContentValues = ContentValues();
+            container.put(PLAYLIST_TITLE, "Alle");
+            db.insert(TABLE_PLAYLIST, null, container);
+
         } else {
             Log.e(TAG, "${this.javaClass.name} Fehler bei der Ausfuehrung von SQL Query");
         }
     }
 
+    //region Methode zum Holen der MP3-Dateien
+    fun getAllMp3Files(context: Context): List<myAudio> {
+        val mp3List = mutableListOf<myAudio>()
+        val projection = arrayOf(
+            MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.DISPLAY_NAME,
+            MediaStore.Audio.Media.ARTIST,
+            MediaStore.Audio.Media.GENRE,
+            MediaStore.Audio.Media.DATE_ADDED,
+        )
+        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+
+        val cursor = context.contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            projection,
+            selection,
+            null,
+            "${MediaStore.Audio.Media.DISPLAY_NAME} ASC"
+        )?.use { cursor ->
+            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID);
+            val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME);
+            val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST);
+            val genreColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.GENRE);
+            val relDateColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED);
+
+            while (cursor.moveToNext()) {
+                val id = cursor.getInt(idColumn);
+                val name = cursor.getString(nameColumn);
+                val artist = cursor.getString(artistColumn);
+                val genre = cursor.getString(genreColumn);
+                val release = cursor.getString(relDateColumn);
+
+                val contentUri: Uri = ContentUris.withAppendedId(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    id.toLong()
+                );
+
+                mp3List += myAudio(id, name, artist, genre, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI.toString(), release);
+            }
+        }
+        return mp3List;
+    }
+    //endregion
+
 
     //Methode zum Erneuern der db Version
     //Nicht verwendet
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        TODO("Not yet implemented")
     }
 
     //region CRUD für Audio
@@ -79,6 +135,24 @@ class DataBaseHelper(context: Context) :
         return maxID + 1;
     }
 
+    //Methode, um zu überprüfen, ob eine Audiodatei mit einer ID schon existiert
+    fun audioExists(id: Int): Boolean {
+        val query = "SELECT 1 FROM $TABLE_AUDIO WHERE $AUDIO_ID = $id"
+        val db = readableDatabase
+        val cursor = db.rawQuery(query, null)
+        val exists = cursor.moveToFirst()
+        cursor.close()
+        return exists
+    }
+
+    //Methode, um gelöschte Audiodateien aus der Datenbank zu entfernen
+    fun removeDeletedAudios(currentIds: List<Int>) {
+        val idList = currentIds.joinToString(",")
+        writableDatabase.execSQL(
+            "DELETE FROM $TABLE_AUDIO WHERE $AUDIO_ID NOT IN ($idList)"
+        )
+    }
+
     //Methode für das Hinzufügen eines Eintrags zur Datenbank
     fun addAudioToDatabase(myAudio: myAudio) {
         val db: SQLiteDatabase = writableDatabase;
@@ -95,7 +169,8 @@ class DataBaseHelper(context: Context) :
 
     //Methode für das Löschen eines Eintrags aus der Datenbank
     fun deleteAudioEntry(track: myAudio): Boolean {
-        val deleteString: String = "DELETE FROM ${TABLE_AUDIO} WHERE ${AUDIO_ID} = ${track.audioID}";
+        val deleteString: String =
+            "DELETE FROM ${TABLE_AUDIO} WHERE ${AUDIO_ID} = ${track.audioID}";
         val db = writableDatabase;
         try {
             db.execSQL(deleteString);
@@ -107,8 +182,9 @@ class DataBaseHelper(context: Context) :
 
     //Methode für das Bearbeiten eines Eintrags aus der Datenbank
     fun editAudioEntry(track: myAudio): Boolean {
-        val editString: String = "UPDATE ${TABLE_AUDIO} SET ${AUDIO_TITLE} = '${track.audioTitle}', ${AUDIO_ARTIST} = '${track.audioArtist}'" +
-                ", ${AUDIO_RELDATE} = '${track.audioRelDate}', ${AUDIO_GENRE} = '${track.audioGenre}', ${AUDIO_SAVEPATH} = '${track.audioPath}' WHERE ${AUDIO_ID} = '${track.audioID}'";
+        val editString: String =
+            "UPDATE ${TABLE_AUDIO} SET ${AUDIO_TITLE} = '${track.audioTitle}', ${AUDIO_ARTIST} = '${track.audioArtist}'" +
+                    ", ${AUDIO_RELDATE} = '${track.audioRelDate}', ${AUDIO_GENRE} = '${track.audioGenre}', ${AUDIO_SAVEPATH} = '${track.audioPath}' WHERE ${AUDIO_ID} = '${track.audioID}'";
         val db = writableDatabase;
         try {
             db.execSQL(editString);
@@ -145,24 +221,32 @@ class DataBaseHelper(context: Context) :
 
     //Methode für das Löschen eines Eintrags aus der Datenbank
     fun deletePlaylistEntry(playList: myPlaylist): Boolean {
-        val deleteString: String = "DELETE FROM ${TABLE_PLAYLIST} WHERE ${PLAYLIST_ID} = ${playList.playlistID}";
+        val deleteString: String =
+            "DELETE FROM ${TABLE_PLAYLIST} WHERE ${PLAYLIST_ID} = ${playList.playlistID}";
         val db = writableDatabase;
         try {
             db.execSQL(deleteString);
         } catch (ex: Exception) {
-            Log.e(TAG, "Fehler beim Loeschen des Eintrags ${playList.playlistTitle} aus Datenbank \n $ex")
+            Log.e(
+                TAG,
+                "Fehler beim Loeschen des Eintrags ${playList.playlistTitle} aus Datenbank \n $ex"
+            )
         }
         return true;
     }
 
     //Methode für das Bearbeiten eines Eintrags aus der Datenbank
     fun editPlaylistEntry(playList: myPlaylist): Boolean {
-        val editString: String = "UPDATE ${TABLE_AUDIO} SET ${PLAYLIST_TITLE} = '${playList.playlistTitle}' WHERE ${PLAYLIST_ID} = '${playList.playlistID}'";
+        val editString: String =
+            "UPDATE ${TABLE_PLAYLIST} SET ${PLAYLIST_TITLE} = '${playList.playlistTitle}' WHERE ${PLAYLIST_ID} = '${playList.playlistID}'";
         val db = writableDatabase;
         try {
             db.execSQL(editString);
         } catch (ex: Exception) {
-            Log.e(TAG, "Fehler beim Aendern des Eintrags ${playList.playlistTitle} aus Datenbank \n $ex");
+            Log.e(
+                TAG,
+                "Fehler beim Aendern des Eintrags ${playList.playlistTitle} aus Datenbank \n $ex"
+            );
         }
         return true;
     }

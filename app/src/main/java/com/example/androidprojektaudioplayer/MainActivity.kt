@@ -8,9 +8,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.example.androidprojektaudioplayer.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityMainBinding
-
     private lateinit var myDB: DataBaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,6 +22,24 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+
         myDB = DataBaseHelper(this);
+
+        var defaultList: MutableList<myAudio> = myDB.getAllMp3Files(this) as MutableList<myAudio>;
+        myDB.removeDeletedAudios(defaultList.map { it.audioID })
+        for (audio in defaultList) {
+            if (!myDB.audioExists(audio.audioID)) {
+                myDB.addAudioToDatabase(audio)
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume();
+        refreshList();
+    }
+
+    fun refreshList() {
+
     }
 }
