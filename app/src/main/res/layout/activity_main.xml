@@ -81,7 +81,7 @@
 
             <!-- Titel (Blau) -->
             <TextView
-                android:id="@+id/titleText"
+                android:id="@+id/tvTitleText"
                 android:layout_width="0dp"
                 android:layout_height="40sp"
                 android:text="Titel"
@@ -91,11 +91,11 @@
 
             <!-- Untertitel (Hellblau) -->
             <TextView
-                android:id="@+id/subTitleText"
+                android:id="@+id/tvSubTitleText"
                 android:layout_width="0dp"
                 android:layout_height="25sp"
                 android:text="Untertitel"
-                app:layout_constraintTop_toBottomOf="@id/titleText"
+                app:layout_constraintTop_toBottomOf="@id/tvTitleText"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
@@ -106,42 +106,46 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center"
-                app:layout_constraintTop_toBottomOf="@id/subTitleText"
+                app:layout_constraintTop_toBottomOf="@id/tvSubTitleText"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/volumeButton"
-                app:layout_constraintBottom_toTopOf="@id/seekBar"
+                app:layout_constraintEnd_toStartOf="@id/btnVolume"
+                app:layout_constraintBottom_toTopOf="@id/sbProgress"
                 app:layout_constraintHorizontal_bias="0.5">
 
                 <com.google.android.material.button.MaterialButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:icon="@drawable/skip_previous_24px" />
+                    app:icon="@drawable/skip_previous_24px"
+                    android:id="@+id/btnPrevious"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:icon="@drawable/pause_24px"
-                    android:textAlignment="center"/>
+                    android:textAlignment="center"
+                    android:id="@+id/btnPause"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:icon="@drawable/skip_next_24px"/>
+                    app:icon="@drawable/skip_next_24px"
+                    android:id="@+id/btnNext"/>
             </LinearLayout>
 
             <!-- Lautsprecher-Button (Gelb) -->
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/volumeButton"
+                android:id="@+id/btnVolume"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toTopOf="@id/buttonContainer"
                 app:layout_constraintBottom_toBottomOf="@id/buttonContainer"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:icon="@drawable/brand_awareness_24px"/>
+                app:icon="@drawable/brand_awareness_24px"
+                />
 
             <!-- SeekBar (Weiß) -->
             <SeekBar
-                android:id="@+id/seekBar"
+                android:id="@+id/sbProgress"
                 android:layout_width="0dp"
                 android:layout_height="25sp"
                 app:layout_constraintBottom_toBottomOf="parent"

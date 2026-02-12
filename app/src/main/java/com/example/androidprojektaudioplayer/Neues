@@ -18,3 +18,6 @@ val mediaPlayer: MediaPlayer = MediaPlayer().apply {
                 prepare();
                 start();
             }
+
+6) Merken, dass Logik nicht im Adapter passiert, sondern in der MainActivity.
+Adapter sind nur für Darstellung da. Callbacks verwenden!!!

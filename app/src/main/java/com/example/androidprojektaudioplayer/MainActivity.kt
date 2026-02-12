@@ -35,19 +35,27 @@ class MainActivity : AppCompatActivity() {
         myDB = DataBaseHelper(this)
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_AUDIO)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                arrayOf(Manifest.permission.READ_MEDIA_AUDIO), 1)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.READ_MEDIA_AUDIO), 1
+            )
         } else {
             ladeAudioDateien()
         }
     }
 
     //Methode um die Berechtigungen zu überprüfen
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 1 && grantResults.isNotEmpty()
-            && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            && grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
             ladeAudioDateien()
         }
     }
@@ -78,8 +86,11 @@ class MainActivity : AppCompatActivity() {
                 .build()
         )
         mediaPlayer.setDataSource(this, Uri.parse(track.audioPath))
-        mediaPlayer.prepare()
-        mediaPlayer.start()
+        mediaPlayer.prepare();
+        mediaPlayer.start();
+
+        binding.tvTitleText.text = track.audioTitle;
+        binding.tvSubTitleText.text = track.audioArtist;
     }
 
     //Methode, um die Audiodateien zu laden
