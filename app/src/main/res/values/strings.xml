@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">AndroidProjektAudioPlayer</string>
+    <string name="notFound">Nicht angegeben</string>
 </resources>

@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
+import androidx.core.content.res.TypedArrayUtils.getString
 
 private val TAG: String = "SoundioMusikPlayer"
 private val DATABASE_VERSION: Int = 1;
@@ -95,10 +96,13 @@ class DataBaseHelper(context: Context) :
 
             while (cursor.moveToNext()) {
                 val id = cursor.getInt(idColumn);
-                val name = cursor.getString(nameColumn) ?: ""
-                val artist = cursor.getString(artistColumn) ?: ""
-                val genre = cursor.getString(genreColumn) ?: ""
-                val release = cursor.getString(relDateColumn) ?: ""
+                val name = cursor.getString(nameColumn);
+                val artist = cursor.getString(artistColumn) ?: context.getString(R.string.notFound);
+                val genre = cursor.getString(genreColumn) ?: context.getString(R.string.notFound);
+                val release = cursor.getString(relDateColumn) ?: context.getString(R.string.notFound);
+                if (release != context.getString(R.string.notFound)) {
+
+                }
 
                 val contentUri: Uri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
