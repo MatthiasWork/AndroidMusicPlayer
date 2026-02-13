@@ -1,8 +1,10 @@
 package com.example.androidprojektaudioplayer
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
+import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
@@ -70,7 +72,29 @@ class MainActivity : AppCompatActivity() {
         } else {
             ladeAudioDateien()
         }
+
+        // Pause/Play Button
+        binding.btnPause.setOnClickListener {
+            if (mediaPlayer.isPlaying) {
+                mediaPlayer.pause()
+                binding.btnPause.setIconResource(R.drawable.play_arrow_24px)
+            } else {
+                mediaPlayer.start()
+                binding.btnPause.setIconResource(R.drawable.pause_24px)
+            }
+        }
+
+
+        binding.btnVolume.setOnClickListener {
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            audioManager.adjustStreamVolume(
+                AudioManager.STREAM_MUSIC,
+                AudioManager.ADJUST_SAME,
+                AudioManager.FLAG_SHOW_UI
+            )
+        }
     }
+
 
     //Methode um die Berechtigungen zu überprüfen
     override fun onRequestPermissionsResult(
@@ -129,6 +153,7 @@ class MainActivity : AppCompatActivity() {
     //Methode, um die Audiodateien zu laden
     fun ladeAudioDateien() {
         val defaultList: MutableList<myAudio> = myDB.getAllMp3Files(this) as MutableList<myAudio>
+        val playLibList: MutableList<myPlaylist> = myDB.getAllPlaylistsFromDB() as MutableList<myPlaylist>;
         myDB.removeDeletedAudios(defaultList.map { it.audioID })
         for (audio in defaultList) {
             if (!myDB.audioExists(audio.audioID)) {
@@ -140,5 +165,9 @@ class MainActivity : AppCompatActivity() {
             playTrack(track)
         }
         binding.rvAudioTracks.adapter = adapter
+
+        binding.rvPlaylists.layoutManager = LinearLayoutManager(this);
+        val playListAdapter = MyAdapterPlaylist(playLibList, this)
+        binding.rvPlaylists.adapter = playListAdapter;
     }
 }

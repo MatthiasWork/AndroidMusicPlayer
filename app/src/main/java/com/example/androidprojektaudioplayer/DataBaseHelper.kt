@@ -240,6 +240,24 @@ class DataBaseHelper(context: Context) :
         return maxID + 1;
     }
 
+    fun getAllPlaylistsFromDB(): List<myPlaylist> {
+        val audioList = mutableListOf<myPlaylist>();
+        val query = "SELECT * FROM $TABLE_PLAYLIST";
+        val db = readableDatabase;
+        val cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                val audio = myPlaylist();
+                audio.playlistID = cursor.getInt(0);
+                audio.playlistTitle = cursor.getString(1);
+                audioList.add(audio)
+            } while (cursor.moveToNext())
+        }
+        cursor.close();
+        return audioList;
+    }
+
     //Methode für das Hinzufügen eines Eintrags zur Datenbank
     fun addPlaylistToDatabase(myPlaylist: myPlaylist) {
         val db: SQLiteDatabase = writableDatabase;

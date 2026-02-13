@@ -15,7 +15,8 @@ class MyAdapterPlaylist(private val playlistList: MutableList<myPlaylist>,
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        val currentTrack = playlistList[position];
+        val currentPlaylist = playlistList[position];
+        holder.tvTitle.text = currentPlaylist.playlistTitle;
     }
 
     override fun getItemCount(): Int {
