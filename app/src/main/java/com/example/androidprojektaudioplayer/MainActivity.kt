@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var myDB: DataBaseHelper
     private var mediaPlayer: MediaPlayer = MediaPlayer()
     private var currentUri: String = ""
+    private var order: Boolean = false;
     private val handler = Handler(Looper.getMainLooper())
 
     // Runnable der die SeekBar jede Sekunde aktualisiert
@@ -84,7 +85,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
+        // Volume Button
         binding.btnVolume.setOnClickListener {
             val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
             audioManager.adjustStreamVolume(
@@ -92,6 +93,11 @@ class MainActivity : AppCompatActivity() {
                 AudioManager.ADJUST_SAME,
                 AudioManager.FLAG_SHOW_UI
             )
+        }
+
+        // Änderung der Sortierreihenfolge
+        binding.btnChangeSortOrder.setOnClickListener {
+            order = !order;
         }
     }
 
@@ -160,14 +166,15 @@ class MainActivity : AppCompatActivity() {
                 myDB.addAudioToDatabase(audio)
             }
         }
-        binding.rvAudioTracks.layoutManager = LinearLayoutManager(this)
+
+        binding.rvAudioTracks.layoutManager = LinearLayoutManager(this);
         val adapter = MyAdapterAudio(defaultList, this) { track ->
-            playTrack(track)
+            playTrack(track);
         }
-        binding.rvAudioTracks.adapter = adapter
+        binding.rvAudioTracks.adapter = adapter;
 
         binding.rvPlaylists.layoutManager = LinearLayoutManager(this);
-        val playListAdapter = MyAdapterPlaylist(playLibList, this)
+        val playListAdapter = MyAdapterPlaylist(playLibList, this);
         binding.rvPlaylists.adapter = playListAdapter;
     }
 }

@@ -40,27 +40,61 @@
                 android:orientation="horizontal">
 
                 <!-- Grüne TextView -->
-                <TextView
+                <EditText
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="SUCHE HIER"
-                    android:padding="8dp" />
+                    android:padding="8dp"
+                    android:id="@+id/etSearch" />
 
                 <!-- Blauer Button -->
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:layout_width="wrap_content"
                     android:layout_height="40sp"
-                    android:text="AB/AUF"
-                    android:padding="8dp"/>
+                    app:icon="@drawable/unknown_med_24px"
+                    android:padding="8dp"
+                    android:id="@+id/btnChangeSortOrder"/>
             </LinearLayout>
 
             <!-- Hellrotes LinearLayout -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="10dp" />
+                android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSortByName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    app:icon="@drawable/match_case_24px"
+                    app:iconSize="30sp"
+                    />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSortByArtist"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    app:icon="@drawable/person_24px"
+                    app:iconSize="30sp"
+                    />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSortByGenre"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    app:icon="@drawable/genres_24px"
+                    app:iconSize="30sp"
+                    />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSortByRelease"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    app:icon="@drawable/calendar_month_24px"
+                    app:iconSize="30sp"
+                    />
+            </LinearLayout>
 
             <!-- Große RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView
