@@ -1,7 +1,9 @@
 package com.example.androidprojektaudioplayer
 
 import android.Manifest
+import android.app.DatePickerDialog
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.AudioManager
@@ -10,8 +12,12 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
+import android.widget.LinearLayout
 import android.widget.SeekBar
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -19,6 +25,12 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.androidprojektaudioplayer.databinding.ActivityMainBinding
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -29,7 +41,11 @@ class MainActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var songList: MutableList<myAudio> = mutableListOf<myAudio>();
     private var currentTrackIndex: Int = -1
+    private lateinit var filePickerLauncher: ActivityResultLauncher<Intent>
+    private var currentPathField: TextInputEditText? = null
+
     enum class SortOption { NAME, ARTIST, GENRE, RELEASE }
+
     private var currentSortOption: SortOption = SortOption.NAME
 
     // Runnable der die SeekBar jede Sekunde aktualisiert
@@ -63,6 +79,7 @@ class MainActivity : AppCompatActivity() {
                     mediaPlayer.seekTo(progress)
                 }
             }
+
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
@@ -76,6 +93,14 @@ class MainActivity : AppCompatActivity() {
             )
         } else {
             ladeAudioDateien();
+        }
+
+        // Öffnen des FileExplorers für Auswahl von Datei
+        filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val uri = result.data?.data
+                currentPathField?.setText(uri.toString());
+            }
         }
 
         // Pause/Play Button
@@ -140,6 +165,105 @@ class MainActivity : AppCompatActivity() {
                 }
                 loadAdapter()
             }
+        }
+
+        // Floating action button für das Hinzufügen neuer Elemente
+        binding.fabAddPlaylist.setOnClickListener {
+            val bottomSheet = BottomSheetDialog(this)
+            bottomSheet.behavior.isFitToContents = true;
+            bottomSheet.behavior.skipCollapsed = true;
+            val view = layoutInflater.inflate(R.layout.bottomsheetadd, null)
+
+            val toggleAddOptions = view.findViewById<MaterialButtonToggleGroup>(R.id.toggleAddOptions)
+            val layoutNewPlaylist = view.findViewById<LinearLayout>(R.id.layoutNewPlaylist)
+            val layoutNewAudio = view.findViewById<LinearLayout>(R.id.layoutNewAudio)
+            val etPlaylistName = view.findViewById<TextInputEditText>(R.id.etPlaylistName)
+            val etAudioTitle = view.findViewById<TextInputEditText>(R.id.etAudioTitle)
+            val etAudioArtist = view.findViewById<TextInputEditText>(R.id.etAudioArtist)
+            val etAudioGenre = view.findViewById<TextInputEditText>(R.id.etAudioGenre)
+            val etAudioDate = view.findViewById<TextInputEditText>(R.id.etAudioDate)
+            val etAudioPath = view.findViewById<TextInputEditText>(R.id.etAudioPath)
+            val btnBrowse = view.findViewById<MaterialButton>(R.id.btnBrowse)
+            val btnSavePlaylist = view.findViewById<MaterialButton>(R.id.btnSavePlaylist)
+            val btnSaveAudio = view.findViewById<MaterialButton>(R.id.btnSaveAudio)
+
+            // Toggle zwischen Playlist und Audio
+            toggleAddOptions.addOnButtonCheckedListener { _, checkedId, isChecked ->
+                if (isChecked) {
+                    when (checkedId) {
+                        R.id.btnAddPlaylist -> {
+                            layoutNewPlaylist.visibility = View.VISIBLE
+                            layoutNewAudio.visibility = View.GONE
+                        }
+                        R.id.btnAddAudio -> {
+                            layoutNewPlaylist.visibility = View.GONE
+                            layoutNewAudio.visibility = View.VISIBLE
+                        }
+                    }
+                }
+            }
+
+            // File Explorer öffnen
+            btnBrowse.setOnClickListener {
+                currentPathField = etAudioPath
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "audio/*"
+                }
+                filePickerLauncher.launch(intent)
+            }
+
+            // Playlist speichern
+            btnSavePlaylist.setOnClickListener {
+                val name = etPlaylistName.text.toString()
+                if (name.isNotEmpty()) {
+                    val playlist = myPlaylist()
+                    playlist.playlistID = myDB.getNextAvailablePlaylistID()
+                    playlist.playlistTitle = name
+                    myDB.addPlaylistToDatabase(playlist)
+                    ladeAudioDateien()
+                    bottomSheet.dismiss()
+                }
+            }
+
+            view.findViewById<TextInputLayout>(R.id.tilAudioDate).setEndIconOnClickListener {
+                val calendar = java.util.Calendar.getInstance()
+                DatePickerDialog(
+                    this,
+                    { _, year, month, day ->
+                        val formattedDate = String.format("%02d.%02d.%04d", day, month + 1, year)
+                        etAudioDate.setText(formattedDate)
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
+                ).show()
+            }
+
+            // Audio speichern
+            btnSaveAudio.setOnClickListener {
+                val title = etAudioTitle.text.toString()
+                val artist = etAudioArtist.text.toString()
+                val genre = etAudioGenre.text.toString()
+                val date = etAudioDate.text.toString()
+                val path = etAudioPath.text.toString()
+
+                if (title.isNotEmpty() && path.isNotEmpty()) {
+                    val audio = myAudio()
+                    audio.audioID = myDB.getNextAvailableAudioID()
+                    audio.audioTitle = title
+                    audio.audioArtist = artist
+                    audio.audioGenre = genre
+                    audio.audioRelDate = date
+                    audio.audioPath = path
+                    myDB.addAudioToDatabase(audio)
+                    ladeAudioDateien()
+                    bottomSheet.dismiss()
+                }
+            }
+
+            bottomSheet.setContentView(view)
+            bottomSheet.show()
         }
     }
 
@@ -211,11 +335,19 @@ class MainActivity : AppCompatActivity() {
                 val sdf = java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.getDefault())
                 if (order) {
                     songList.sortByDescending { track ->
-                        try { sdf.parse(track.audioRelDate) } catch (e: Exception) { null }
+                        try {
+                            sdf.parse(track.audioRelDate)
+                        } catch (e: Exception) {
+                            null
+                        }
                     }
                 } else {
                     songList.sortBy { track ->
-                        try { sdf.parse(track.audioRelDate) } catch (e: Exception) { null }
+                        try {
+                            sdf.parse(track.audioRelDate)
+                        } catch (e: Exception) {
+                            null
+                        }
                     }
                 }
             }
@@ -230,14 +362,16 @@ class MainActivity : AppCompatActivity() {
 
     //Methode, um die Audiodateien zu laden
     fun ladeAudioDateien() {
-        songList = myDB.getAllMp3Files(this) as MutableList<myAudio>;
-        val playLibList: MutableList<myPlaylist> = myDB.getAllPlaylistsFromDB() as MutableList<myPlaylist>;
-        myDB.removeDeletedAudios(songList.map { it.audioID })
-        for (audio in songList) {
+        val mediaList = myDB.getAllMp3Files(this) as MutableList<myAudio>
+        myDB.removeDeletedAudios(mediaList.map { it.audioID })
+        for (audio in mediaList) {
             if (!myDB.audioExists(audio.audioID)) {
                 myDB.addAudioToDatabase(audio);
             }
         }
+        songList = myDB.getAllAudiosFromDB() as MutableList<myAudio>;
+        val playLibList: MutableList<myPlaylist> =
+            myDB.getAllPlaylistsFromDB() as MutableList<myPlaylist>;
 
         loadAdapter();
 
