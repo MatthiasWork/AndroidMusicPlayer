@@ -279,7 +279,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
     //Methode um die Berechtigungen zu überprüfen
     override fun onRequestPermissionsResult(
         requestCode: Int,
