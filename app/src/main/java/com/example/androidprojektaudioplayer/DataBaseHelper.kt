@@ -75,7 +75,7 @@ class DataBaseHelper(context: Context) :
             MediaStore.Audio.Media.GENRE,
             MediaStore.Audio.Media.DATE_ADDED,
         )
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.RELATIVE_PATH} LIKE '%Music%'"
 
         val cursor = context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -223,6 +223,15 @@ class DataBaseHelper(context: Context) :
             Log.e(TAG, "Fehler beim Aendern des Eintrags ${track.audioTitle} aus Datenbank \n $ex");
         }
         return true;
+    }
+
+    //Methode, um eine Audiodatei mit einer Playlist zu verknüpfen
+    fun addAudioToPlaylist(audioID: Int, playlistID: Int) {
+        val db = writableDatabase
+        val container = ContentValues()
+        container.put(FKPK_AUDIOPLAYLIST, audioID)
+        container.put(FKPK_PLAYLISTAUDIO, playlistID)
+        db.insert(TABLE_PLAYAUDIO, null, container);
     }
     //endregion
 

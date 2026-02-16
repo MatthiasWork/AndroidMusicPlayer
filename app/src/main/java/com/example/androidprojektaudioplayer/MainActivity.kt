@@ -256,7 +256,8 @@ class MainActivity : AppCompatActivity() {
                     audio.audioGenre = genre
                     audio.audioRelDate = date
                     audio.audioPath = path
-                    myDB.addAudioToDatabase(audio)
+                    myDB.addAudioToDatabase(audio);
+                    myDB.addAudioToPlaylist(audio.audioID, 1)
                     ladeAudioDateien()
                     bottomSheet.dismiss()
                 }
