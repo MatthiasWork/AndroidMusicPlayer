@@ -103,7 +103,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:icon="@drawable/brand_awareness_24px"
-            app:iconSize="30dp"
+            app:iconSize="36dp"
             android:layout_marginStart="24dp"
             style="@style/Widget.Material3.Button.IconButton"/>
 
