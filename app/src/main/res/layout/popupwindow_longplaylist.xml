@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:background="?attr/colorSurface"
+    android:elevation="8dp">
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnEdit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bearbeiten"
+        app:icon="@drawable/edit_24px"
+        style="@style/Widget.Material3.Button.TextButton"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDelete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Löschen"
+        app:icon="@drawable/delete_24px"
+        style="@style/Widget.Material3.Button.TextButton"/>
+
+</LinearLayout>
