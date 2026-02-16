@@ -100,7 +100,14 @@ class MainActivity : AppCompatActivity() {
         filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 val uri = result.data?.data
-                currentPathField?.setText(uri.toString());
+                if (uri != null) {
+                    // Persistente Berechtigung sichern
+                    contentResolver.takePersistableUriPermission(
+                        uri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                    currentPathField?.setText(uri.toString())
+                }
             }
         }
 
@@ -210,6 +217,8 @@ class MainActivity : AppCompatActivity() {
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                     addCategory(Intent.CATEGORY_OPENABLE)
                     type = "audio/*"
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
                 }
                 filePickerLauncher.launch(intent)
             }

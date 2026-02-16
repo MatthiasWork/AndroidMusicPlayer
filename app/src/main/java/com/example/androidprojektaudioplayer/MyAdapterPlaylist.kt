@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupWindow
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
@@ -16,9 +17,12 @@ class MyAdapterPlaylist(
     private val onPlaylistClicked: (myPlaylist) -> Unit,
     private val onPlaylistEdited: (myPlaylist, String) -> Unit,
     private val onPlaylistDeleted: (myPlaylist) -> Unit
-): RecyclerView.Adapter<MyAdapterPlaylist.MyViewHolder>() {
+) : RecyclerView.Adapter<MyAdapterPlaylist.MyViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyAdapterPlaylist.MyViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): MyAdapterPlaylist.MyViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.playlistcard, parent, false)
         return MyViewHolder(view, contextExt)
     }
@@ -31,58 +35,72 @@ class MyAdapterPlaylist(
         }
 
         holder.itemView.setOnLongClickListener {
-            val inflater = LayoutInflater.from(contextExt)
-            val popupView = inflater.inflate(R.layout.popupwindow_longplaylist, null)
+            if (currentPlaylist.playlistID == 1) {
+                val builder = AlertDialog.Builder(contextExt);
+                builder.setMessage("Diese Playlist kann man nicht bearbeiten oder löschen.");
+                builder.setTitle("Hinweis!");
+                builder.setCancelable(true);
+                builder.create();
+                builder.show();
+                true;
+            } else {
 
-            val popupWindow = PopupWindow(
-                popupView,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                true
-            )
+                val inflater = LayoutInflater.from(contextExt)
+                val popupView = inflater.inflate(R.layout.popupwindow_longplaylist, null)
 
-            popupView.findViewById<MaterialButton>(R.id.btnEditPopUp).setOnClickListener {
-                popupWindow.dismiss();
-                val editView = inflater.inflate(R.layout.popupwindow_editfollowup, null)
-                val editPopup = PopupWindow(
-                    editView,
+                val popupWindow = PopupWindow(
+                    popupView,
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     true
                 )
 
-                editView.findViewById<TextInputEditText>(R.id.etNewPlaylistName)
-                    .setText(currentPlaylist.playlistTitle)
+                popupView.findViewById<MaterialButton>(R.id.btnEditPopUp).setOnClickListener {
+                    popupWindow.dismiss();
+                    val editView = inflater.inflate(R.layout.popupwindow_editfollowup, null)
+                    val editPopup = PopupWindow(
+                        editView,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        true
+                    )
 
-                editView.findViewById<MaterialButton>(R.id.btnSaveEditPopUp).setOnClickListener {
-                    val newName = editView.findViewById<TextInputEditText>(R.id.etNewPlaylistName)
-                        .text.toString()
-                    if (newName.isNotEmpty()) {
-                        currentPlaylist.playlistTitle = newName
-                        onPlaylistEdited(currentPlaylist, newName);
-                        notifyItemChanged(position);
-                        editPopup.dismiss()
-                    }
+                    editView.findViewById<TextInputEditText>(R.id.etNewPlaylistName)
+                        .setText(currentPlaylist.playlistTitle)
+
+                    editView.findViewById<MaterialButton>(R.id.btnSaveEditPopUp)
+                        .setOnClickListener {
+                            val newName =
+                                editView.findViewById<TextInputEditText>(R.id.etNewPlaylistName)
+                                    .text.toString()
+                            if (newName.isNotEmpty()) {
+                                currentPlaylist.playlistTitle = newName
+                                onPlaylistEdited(currentPlaylist, newName);
+                                notifyItemChanged(position);
+                                editPopup.dismiss()
+                            }
+                        }
+
+                    editPopup.showAsDropDown(holder.itemView)
                 }
 
-                editPopup.showAsDropDown(holder.itemView)
-            }
+                popupView.findViewById<MaterialButton>(R.id.btnDeletePopUp).setOnClickListener {
+                    onPlaylistDeleted(currentPlaylist);
+                    popupWindow.dismiss();
+                }
 
-            popupView.findViewById<MaterialButton>(R.id.btnDeletePopUp).setOnClickListener {
-                onPlaylistDeleted(currentPlaylist);
-                popupWindow.dismiss();
+                popupWindow.showAsDropDown(holder.itemView)
+                true
             }
-
-            popupWindow.showAsDropDown(holder.itemView)
-            true
         }
     }
+
 
     override fun getItemCount(): Int {
         return playlistList.size
     }
 
-    class MyViewHolder(itemView: View, contextExt: Context): RecyclerView.ViewHolder(itemView) {
+    class MyViewHolder(itemView: View, contextExt: Context) : RecyclerView.ViewHolder(itemView) {
         val tvTitle: TextView = itemView.findViewById(R.id.tvplaylistName)
         val card: View = itemView.findViewById(R.id.playlistID)
     }

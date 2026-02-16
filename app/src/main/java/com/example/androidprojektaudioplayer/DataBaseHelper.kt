@@ -334,6 +334,10 @@ class DataBaseHelper(context: Context) :
 
     //Methode für das Bearbeiten eines Eintrags aus der Datenbank
     fun editPlaylistEntry(playList: myPlaylist): Boolean {
+        if (playList.playlistID == 1) {
+            Log.e(TAG, "Die Alle-Playlist kann nicht bearbeitet werden")
+            return false
+        }
         val editString: String =
             "UPDATE ${TABLE_PLAYLIST} SET ${PLAYLIST_TITLE} = '${playList.playlistTitle}' WHERE ${PLAYLIST_ID} = '${playList.playlistID}'";
         val db = writableDatabase;

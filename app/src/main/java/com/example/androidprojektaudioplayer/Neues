@@ -23,3 +23,5 @@ val mediaPlayer: MediaPlayer = MediaPlayer().apply {
 Adapter sind nur für Darstellung da. Callbacks verwenden!!!
 
 7) BottomSheetDialog für Formular, das von unten aufploppt
+
+8) FileExplorer öffnen mit ActivityResultLauncher
