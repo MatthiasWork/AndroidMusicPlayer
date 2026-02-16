@@ -75,7 +75,6 @@ class MainActivity : AppCompatActivity() {
         // SeekBar Listener - wenn Nutzer die Position ändert
         binding.sbProgress.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                // Nur reagieren wenn der Nutzer selbst zieht, nicht wenn der Handler aktualisiert
                 if (fromUser) {
                     mediaPlayer.seekTo(progress)
                 }
