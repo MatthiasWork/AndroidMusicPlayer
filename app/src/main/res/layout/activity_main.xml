@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:padding="10dp"
+    android:padding="15dp"
     android:id="@+id/main">
 
     <!-- Oberer Bereich -->
@@ -51,9 +51,10 @@
                 <!-- Blauer Button -->
                 <com.google.android.material.button.MaterialButton
                     android:layout_width="wrap_content"
-                    android:layout_height="40sp"
+                    android:layout_height="45sp"
                     app:icon="@drawable/unknown_med_24px"
                     android:padding="8dp"
+                    app:iconSize="30sp"
                     android:id="@+id/btnChangeSortOrder"/>
             </LinearLayout>
 
@@ -150,19 +151,21 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:icon="@drawable/skip_previous_24px"
+                    app:iconSize="30dp"
                     android:id="@+id/btnPrevious"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:icon="@drawable/pause_24px"
-                    android:textAlignment="center"
+                    app:iconSize="30dp"
                     android:id="@+id/btnPause"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:icon="@drawable/skip_next_24px"
+                    app:iconSize="30dp"
                     android:id="@+id/btnNext"/>
             </LinearLayout>
 
@@ -175,6 +178,7 @@
                 app:layout_constraintBottom_toBottomOf="@id/buttonContainer"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:icon="@drawable/brand_awareness_24px"
+                app:iconSize="30dp"
                 />
 
             <!-- SeekBar (Weiß) -->

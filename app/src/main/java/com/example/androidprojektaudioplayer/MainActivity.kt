@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity() {
     private var currentUri: String = ""
     private var order: Boolean = false;
     private val handler = Handler(Looper.getMainLooper())
+    private var songList: MutableList<myAudio> = mutableListOf<myAudio>();
 
     // Runnable der die SeekBar jede Sekunde aktualisiert
     private val updateSeekBar = object : Runnable {
@@ -71,7 +72,7 @@ class MainActivity : AppCompatActivity() {
                 arrayOf(Manifest.permission.READ_MEDIA_AUDIO), 1
             )
         } else {
-            ladeAudioDateien()
+            ladeAudioDateien();
         }
 
         // Pause/Play Button
@@ -98,6 +99,35 @@ class MainActivity : AppCompatActivity() {
         // Änderung der Sortierreihenfolge
         binding.btnChangeSortOrder.setOnClickListener {
             order = !order;
+            if (order == false) {
+                binding.btnChangeSortOrder.icon = getDrawable(R.drawable.keyboard_arrow_down_24px);
+            } else {
+                binding.btnChangeSortOrder.icon = getDrawable(R.drawable.keyboard_arrow_up_24px);
+            }
+        }
+
+        // Sortierung nach Titel
+        binding.btnSortByName.setOnClickListener {
+            songList.sortBy { it.audioTitle };
+            loadAdapter();
+        }
+
+        // Sortierung nach Genre
+        binding.btnSortByGenre.setOnClickListener {
+            songList.sortBy { it.audioGenre }
+            loadAdapter();
+        }
+
+        // Sortierung nach Künstler
+        binding.btnSortByArtist.setOnClickListener {
+            songList.sortBy { it.audioArtist }
+            loadAdapter();
+        }
+
+        // Sortierung nach Erscheinungsdatum
+        binding.btnSortByRelease.setOnClickListener {
+            songList.sortBy { it.audioRelDate }
+            loadAdapter();
         }
     }
 
@@ -118,15 +148,15 @@ class MainActivity : AppCompatActivity() {
 
     //Methode, für wenn die MainActivity wieder im Vordergrund ist
     override fun onResume() {
-        super.onResume()
-        ladeAudioDateien()
+        super.onResume();
+        ladeAudioDateien();
     }
 
     //Methode, um den MediaPlayer freizugeben wenn die Activity geschlossen wird
     override fun onDestroy() {
-        super.onDestroy()
-        handler.removeCallbacks(updateSeekBar)
-        mediaPlayer.release()
+        super.onDestroy();
+        handler.removeCallbacks(updateSeekBar);
+        mediaPlayer.release();
     }
 
     //Methode, um eine Audiodatei abzuspielen
@@ -156,22 +186,33 @@ class MainActivity : AppCompatActivity() {
         binding.tvSubTitleText.text = track.audioArtist
     }
 
-    //Methode, um die Audiodateien zu laden
-    fun ladeAudioDateien() {
-        val defaultList: MutableList<myAudio> = myDB.getAllMp3Files(this) as MutableList<myAudio>
-        val playLibList: MutableList<myPlaylist> = myDB.getAllPlaylistsFromDB() as MutableList<myPlaylist>;
-        myDB.removeDeletedAudios(defaultList.map { it.audioID })
-        for (audio in defaultList) {
-            if (!myDB.audioExists(audio.audioID)) {
-                myDB.addAudioToDatabase(audio)
-            }
+    //Methode, um den Adapter zu laden und zuzuweisen
+    fun loadAdapter() {
+        if (order == true) {
+            //Sort ascending
+        } else {
+            //Sort descending
         }
 
         binding.rvAudioTracks.layoutManager = LinearLayoutManager(this);
-        val adapter = MyAdapterAudio(defaultList, this) { track ->
+        val adapter = MyAdapterAudio(songList, this) { track ->
             playTrack(track);
         }
         binding.rvAudioTracks.adapter = adapter;
+    }
+
+    //Methode, um die Audiodateien zu laden
+    fun ladeAudioDateien() {
+        songList = myDB.getAllMp3Files(this) as MutableList<myAudio>;
+        val playLibList: MutableList<myPlaylist> = myDB.getAllPlaylistsFromDB() as MutableList<myPlaylist>;
+        myDB.removeDeletedAudios(songList.map { it.audioID })
+        for (audio in songList) {
+            if (!myDB.audioExists(audio.audioID)) {
+                myDB.addAudioToDatabase(audio);
+            }
+        }
+
+        loadAdapter();
 
         binding.rvPlaylists.layoutManager = LinearLayoutManager(this);
         val playListAdapter = MyAdapterPlaylist(playLibList, this);
