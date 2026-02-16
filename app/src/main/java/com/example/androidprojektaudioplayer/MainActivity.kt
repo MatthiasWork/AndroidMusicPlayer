@@ -97,19 +97,20 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Öffnen des FileExplorers für Auswahl von Datei
-        filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                val uri = result.data?.data
-                if (uri != null) {
-                    // Persistente Berechtigung sichern
-                    contentResolver.takePersistableUriPermission(
-                        uri,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    )
-                    currentPathField?.setText(uri.toString())
+        filePickerLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    val uri = result.data?.data
+                    if (uri != null) {
+                        // Persistente Berechtigung sichern
+                        contentResolver.takePersistableUriPermission(
+                            uri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+                        currentPathField?.setText(uri.toString())
+                    }
                 }
             }
-        }
 
         // Pause/Play Button
         binding.btnPause.setOnClickListener {
@@ -182,7 +183,8 @@ class MainActivity : AppCompatActivity() {
             bottomSheet.behavior.skipCollapsed = true;
             val view = layoutInflater.inflate(R.layout.bottomsheetadd, null)
 
-            val toggleAddOptions = view.findViewById<MaterialButtonToggleGroup>(R.id.toggleAddOptions)
+            val toggleAddOptions =
+                view.findViewById<MaterialButtonToggleGroup>(R.id.toggleAddOptions)
             val layoutNewPlaylist = view.findViewById<LinearLayout>(R.id.layoutNewPlaylist)
             val layoutNewAudio = view.findViewById<LinearLayout>(R.id.layoutNewAudio)
             val etPlaylistName = view.findViewById<TextInputEditText>(R.id.etPlaylistName)
@@ -203,6 +205,7 @@ class MainActivity : AppCompatActivity() {
                             layoutNewPlaylist.visibility = View.VISIBLE
                             layoutNewAudio.visibility = View.GONE
                         }
+
                         R.id.btnAddAudio -> {
                             layoutNewPlaylist.visibility = View.GONE
                             layoutNewAudio.visibility = View.VISIBLE
@@ -217,8 +220,10 @@ class MainActivity : AppCompatActivity() {
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                     addCategory(Intent.CATEGORY_OPENABLE)
                     type = "audio/*"
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
-                            or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+                    addFlags(
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                    )
                 }
                 filePickerLauncher.launch(intent)
             }
@@ -365,9 +370,24 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.rvAudioTracks.layoutManager = LinearLayoutManager(this)
-        val adapter = MyAdapterAudio(songList, this) { track ->
-            playTrack(track)
-        }
+        val adapter = MyAdapterAudio(
+            songList, this,
+            onTrackClicked = { track -> playTrack(track); },
+            onTrackDeleted = { track ->
+                myDB.deleteAudioEntry(track);
+                ladeAudioDateien();
+            },
+            onTrackEdited = { track ->
+                myDB.editAudioEntry(track);
+                ladeAudioDateien();
+            },
+            onAddToPlaylist = { track ->
+                //myDB.addAudioToPlaylist(track.audioID);
+                ladeAudioDateien();
+            },
+            onRemoveFromPlaylist = { track ->
+            }
+        )
         binding.rvAudioTracks.adapter = adapter
     }
 

@@ -4,13 +4,20 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
 
 class MyAdapterAudio(
     private val audioList: MutableList<myAudio>,
     private val contextExt: Context,
-    private val onTrackClicked: (myAudio) -> Unit
+    private val onTrackClicked: (myAudio) -> Unit,
+    private val onTrackDeleted: (myAudio) -> Unit,
+    private val onTrackEdited: (myAudio) -> Unit,
+    private val onAddToPlaylist: (myAudio) -> Unit,
+    private val onRemoveFromPlaylist: (myAudio) -> Unit
 ): RecyclerView.Adapter<MyAdapterAudio.MyViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyAdapterAudio.MyViewHolder {
@@ -26,8 +33,41 @@ class MyAdapterAudio(
         holder.tvDate.text = currentTrack.audioRelDate
 
         holder.itemView.setOnClickListener {
-            onTrackClicked(currentTrack)
+            onTrackClicked(currentTrack);
         }
+
+        holder.btnMore.setOnClickListener {
+            val inflater = LayoutInflater.from(contextExt);
+            val popupView = inflater.inflate(R.layout.popupwindow_track, null);
+
+            val popupWindow = PopupWindow(
+                popupView,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                true
+            );
+
+            popupView.findViewById<MaterialButton>(R.id.btnDeleteAudioPopUp).setOnClickListener {
+                onTrackDeleted(currentTrack);
+                popupWindow.dismiss();
+            }
+            popupView.findViewById<MaterialButton>(R.id.btnEditAudioPopUp).setOnClickListener {
+                onTrackEdited(currentTrack)
+                popupWindow.dismiss()
+            }
+            popupView.findViewById<MaterialButton>(R.id.btnAddToPlaylistPopUp).setOnClickListener {
+                onAddToPlaylist(currentTrack)
+                popupWindow.dismiss()
+            }
+            popupView.findViewById<MaterialButton>(R.id.btnRemoveFromPlaylistPopUp).setOnClickListener {
+                onRemoveFromPlaylist(currentTrack)
+                popupWindow.dismiss()
+            }
+
+            popupWindow.showAsDropDown(holder.btnMore)
+        }
+
+
     }
 
     override fun getItemCount(): Int {
@@ -35,10 +75,11 @@ class MyAdapterAudio(
     }
 
     class MyViewHolder(itemView: View, contextExt: Context): RecyclerView.ViewHolder(itemView) {
-        val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
-        val tvGenre: TextView = itemView.findViewById(R.id.tvGenre)
-        val tvArtist: TextView = itemView.findViewById(R.id.tvArtist)
-        val tvDate: TextView = itemView.findViewById(R.id.tvDate)
+        val tvTitle: TextView = itemView.findViewById(R.id.tvTitle);
+        val tvGenre: TextView = itemView.findViewById(R.id.tvGenre);
+        val tvArtist: TextView = itemView.findViewById(R.id.tvArtist);
+        val tvDate: TextView = itemView.findViewById(R.id.tvDate);
+        val btnMore: ImageButton = itemView.findViewById(R.id.btnMore);
         val card: View = itemView.findViewById(R.id.songID)
     }
 }

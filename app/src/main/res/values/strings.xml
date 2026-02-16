@@ -13,4 +13,10 @@
 
     <string name="playlist">Playlist</string>
     <string name="audio">Audiodatei</string>
+
+    <string name="audioTitleHint">Song bearbeiten</string>
+    <string name="audioHint">Titel</string>
+    <string name="audioArtistHint">Künstler</string>
+    <string name="audioGenreHint">Genre</string>
+    <string name="audioDateHint">Datum</string>
 </resources>
