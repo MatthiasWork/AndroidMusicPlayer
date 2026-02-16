@@ -28,6 +28,9 @@ class MainActivity : AppCompatActivity() {
     private var order: Boolean = false;
     private val handler = Handler(Looper.getMainLooper())
     private var songList: MutableList<myAudio> = mutableListOf<myAudio>();
+    private var currentTrackIndex: Int = -1
+    enum class SortOption { NAME, ARTIST, GENRE, RELEASE }
+    private var currentSortOption: SortOption = SortOption.NAME
 
     // Runnable der die SeekBar jede Sekunde aktualisiert
     private val updateSeekBar = object : Runnable {
@@ -104,30 +107,39 @@ class MainActivity : AppCompatActivity() {
             } else {
                 binding.btnChangeSortOrder.icon = getDrawable(R.drawable.keyboard_arrow_up_24px);
             }
-        }
-
-        // Sortierung nach Titel
-        binding.btnSortByName.setOnClickListener {
-            songList.sortBy { it.audioTitle };
             loadAdapter();
         }
 
-        // Sortierung nach Genre
-        binding.btnSortByGenre.setOnClickListener {
-            songList.sortBy { it.audioGenre }
-            loadAdapter();
+        // Previous Button
+        binding.btnPrevious.setOnClickListener {
+            if (currentTrackIndex > 0) {
+                playTrack(songList[currentTrackIndex - 1])
+            } else {
+                playTrack(songList[songList.size - 1]);
+            }
         }
 
-        // Sortierung nach Künstler
-        binding.btnSortByArtist.setOnClickListener {
-            songList.sortBy { it.audioArtist }
-            loadAdapter();
+        // Next Button
+        binding.btnNext.setOnClickListener {
+            if (currentTrackIndex < songList.size - 1) {
+                playTrack(songList[currentTrackIndex + 1])
+            } else {
+                playTrack(songList[0]);
+            }
         }
 
-        // Sortierung nach Erscheinungsdatum
-        binding.btnSortByRelease.setOnClickListener {
-            songList.sortBy { it.audioRelDate }
-            loadAdapter();
+        // Sortierbuttons in der RadioGroup
+        binding.toggleSortOptions.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                currentSortOption = when (checkedId) {
+                    R.id.btnSortByName -> SortOption.NAME
+                    R.id.btnSortByArtist -> SortOption.ARTIST
+                    R.id.btnSortByGenre -> SortOption.GENRE
+                    R.id.btnSortByRelease -> SortOption.RELEASE
+                    else -> SortOption.NAME
+                }
+                loadAdapter()
+            }
         }
     }
 
@@ -148,8 +160,10 @@ class MainActivity : AppCompatActivity() {
 
     //Methode, für wenn die MainActivity wieder im Vordergrund ist
     override fun onResume() {
-        super.onResume();
-        ladeAudioDateien();
+        super.onResume()
+        if (songList.isEmpty()) {
+            ladeAudioDateien();
+        }
     }
 
     //Methode, um den MediaPlayer freizugeben wenn die Activity geschlossen wird
@@ -164,6 +178,7 @@ class MainActivity : AppCompatActivity() {
         if (mediaPlayer.isPlaying && currentUri == track.audioPath) {
             return
         }
+        currentTrackIndex = songList.indexOf(track)
         mediaPlayer.reset()
         currentUri = track.audioPath
         mediaPlayer.setAudioAttributes(
@@ -188,17 +203,29 @@ class MainActivity : AppCompatActivity() {
 
     //Methode, um den Adapter zu laden und zuzuweisen
     fun loadAdapter() {
-        if (order == true) {
-            //Sort ascending
-        } else {
-            //Sort descending
+        when (currentSortOption) {
+            SortOption.NAME -> if (order) songList.sortByDescending { it.audioTitle } else songList.sortBy { it.audioTitle }
+            SortOption.ARTIST -> if (order) songList.sortByDescending { it.audioArtist } else songList.sortBy { it.audioArtist }
+            SortOption.GENRE -> if (order) songList.sortByDescending { it.audioGenre } else songList.sortBy { it.audioGenre }
+            SortOption.RELEASE -> {
+                val sdf = java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.getDefault())
+                if (order) {
+                    songList.sortByDescending { track ->
+                        try { sdf.parse(track.audioRelDate) } catch (e: Exception) { null }
+                    }
+                } else {
+                    songList.sortBy { track ->
+                        try { sdf.parse(track.audioRelDate) } catch (e: Exception) { null }
+                    }
+                }
+            }
         }
 
-        binding.rvAudioTracks.layoutManager = LinearLayoutManager(this);
+        binding.rvAudioTracks.layoutManager = LinearLayoutManager(this)
         val adapter = MyAdapterAudio(songList, this) { track ->
-            playTrack(track);
+            playTrack(track)
         }
-        binding.rvAudioTracks.adapter = adapter;
+        binding.rvAudioTracks.adapter = adapter
     }
 
     //Methode, um die Audiodateien zu laden

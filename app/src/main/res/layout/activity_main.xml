@@ -59,10 +59,13 @@
             </LinearLayout>
 
             <!-- Hellrotes LinearLayout -->
-            <LinearLayout
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/toggleSortOptions"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_height="38sp"
+                app:singleSelection="true"
+                app:selectionRequired="true">
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSortByName"
                     android:layout_width="0dp"
@@ -70,7 +73,8 @@
                     android:layout_weight="1"
                     app:icon="@drawable/match_case_24px"
                     app:iconSize="30sp"
-                    />
+                    style="@style/Widget.Material3.Button.OutlinedButton"/>
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSortByArtist"
                     android:layout_width="0dp"
@@ -78,7 +82,8 @@
                     android:layout_weight="1"
                     app:icon="@drawable/person_24px"
                     app:iconSize="30sp"
-                    />
+                    style="@style/Widget.Material3.Button.OutlinedButton"/>
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSortByGenre"
                     android:layout_width="0dp"
@@ -86,7 +91,8 @@
                     android:layout_weight="1"
                     app:icon="@drawable/genres_24px"
                     app:iconSize="30sp"
-                    />
+                    style="@style/Widget.Material3.Button.OutlinedButton"/>
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSortByRelease"
                     android:layout_width="0dp"
@@ -94,8 +100,9 @@
                     android:layout_weight="1"
                     app:icon="@drawable/calendar_month_24px"
                     app:iconSize="30sp"
-                    />
-            </LinearLayout>
+                    style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
 
             <!-- Große RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView
