@@ -268,7 +268,6 @@ class MainActivity : AppCompatActivity() {
             bottomSheet.show()
         }
 
-        ladeAudioDateien();
     }
 
 
@@ -380,11 +379,23 @@ class MainActivity : AppCompatActivity() {
         val playLibList: MutableList<myPlaylist> =
             myDB.getAllPlaylistsFromDB() as MutableList<myPlaylist>
         binding.rvPlaylists.layoutManager = LinearLayoutManager(this)
-        val playListAdapter = MyAdapterPlaylist(playLibList, this) { playlist ->
-            currentPlaylistID = playlist.playlistID
-            songList = myDB.getAudiosByPlaylist(playlist.playlistID) as MutableList<myAudio>
-            loadAdapter()
-        }
+        val playListAdapter = MyAdapterPlaylist(
+            playLibList, this,
+            onPlaylistClicked = { playlist ->
+                currentPlaylistID = playlist.playlistID
+                songList = myDB.getAudiosByPlaylist(playlist.playlistID) as MutableList<myAudio>
+                loadAdapter()
+            },
+            onPlaylistEdited = { playlist, newName ->
+                playlist.playlistTitle = newName
+                myDB.editPlaylistEntry(playlist)
+                ladeAudioDateien()
+            },
+            onPlaylistDeleted = { playlist ->
+                myDB.deletePlaylistEntry(playlist)
+                ladeAudioDateien()
+            }
+        )
         binding.rvPlaylists.adapter = playListAdapter
 
         loadAdapter()
