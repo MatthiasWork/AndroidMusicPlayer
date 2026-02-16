@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var songList: MutableList<myAudio> = mutableListOf<myAudio>();
     private var currentTrackIndex: Int = -1
+    private var currentPlaylistID: Int = 1
     private lateinit var filePickerLauncher: ActivityResultLauncher<Intent>
     private var currentPathField: TextInputEditText? = null
 
@@ -266,6 +267,8 @@ class MainActivity : AppCompatActivity() {
             bottomSheet.setContentView(view)
             bottomSheet.show()
         }
+
+        ladeAudioDateien();
     }
 
 
@@ -368,16 +371,22 @@ class MainActivity : AppCompatActivity() {
         for (audio in mediaList) {
             if (!myDB.audioExists(audio.audioID)) {
                 myDB.addAudioToDatabase(audio);
+                myDB.addAudioToPlaylist(audio.audioID, 1);
             }
         }
-        songList = myDB.getAllAudiosFromDB() as MutableList<myAudio>;
+
+        songList = myDB.getAudiosByPlaylist(currentPlaylistID) as MutableList<myAudio>
+
         val playLibList: MutableList<myPlaylist> =
-            myDB.getAllPlaylistsFromDB() as MutableList<myPlaylist>;
+            myDB.getAllPlaylistsFromDB() as MutableList<myPlaylist>
+        binding.rvPlaylists.layoutManager = LinearLayoutManager(this)
+        val playListAdapter = MyAdapterPlaylist(playLibList, this) { playlist ->
+            currentPlaylistID = playlist.playlistID
+            songList = myDB.getAudiosByPlaylist(playlist.playlistID) as MutableList<myAudio>
+            loadAdapter()
+        }
+        binding.rvPlaylists.adapter = playListAdapter
 
-        loadAdapter();
-
-        binding.rvPlaylists.layoutManager = LinearLayoutManager(this);
-        val playListAdapter = MyAdapterPlaylist(playLibList, this);
-        binding.rvPlaylists.adapter = playListAdapter;
+        loadAdapter()
     }
 }

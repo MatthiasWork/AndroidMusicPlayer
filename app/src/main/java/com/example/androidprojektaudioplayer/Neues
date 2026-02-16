@@ -21,3 +21,5 @@ val mediaPlayer: MediaPlayer = MediaPlayer().apply {
 
 6) Merken, dass Logik nicht im Adapter passiert, sondern in der MainActivity.
 Adapter sind nur für Darstellung da. Callbacks verwenden!!!
+
+7) BottomSheetDialog für Formular, das von unten aufploppt

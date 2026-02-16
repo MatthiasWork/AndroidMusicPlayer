@@ -60,6 +60,10 @@ class DataBaseHelper(context: Context) :
 
             db.execSQL(sqlStringCreateTableInter);
 
+            val container = ContentValues()
+            container.put(PLAYLIST_TITLE, "Alle")
+            db.insert(TABLE_PLAYLIST, null, container)
+
         } else {
             Log.e(TAG, "${this.javaClass.name} Fehler bei der Ausfuehrung von SQL Query");
         }
@@ -75,7 +79,8 @@ class DataBaseHelper(context: Context) :
             MediaStore.Audio.Media.GENRE,
             MediaStore.Audio.Media.DATE_ADDED,
         )
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.RELATIVE_PATH} LIKE '%Music%'"
+        val selection =
+            "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.RELATIVE_PATH} LIKE '%Music%'"
 
         val cursor = context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -95,10 +100,12 @@ class DataBaseHelper(context: Context) :
                 val name = cursor.getString(nameColumn);
                 val artist = cursor.getString(artistColumn) ?: context.getString(R.string.notFound);
                 val genre = cursor.getString(genreColumn) ?: context.getString(R.string.notFound);
-                var release = cursor.getString(relDateColumn) ?: context.getString(R.string.notFound);
+                var release =
+                    cursor.getString(relDateColumn) ?: context.getString(R.string.notFound);
                 if (release != context.getString(R.string.notFound)) {
-                    release = java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.getDefault())
-                        .format(java.util.Date(cursor.getLong(relDateColumn) * 1000L));
+                    release =
+                        java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.getDefault())
+                            .format(java.util.Date(cursor.getLong(relDateColumn) * 1000L));
                 }
 
                 val contentUri: Uri = ContentUris.withAppendedId(
@@ -178,9 +185,10 @@ class DataBaseHelper(context: Context) :
 
     //Methode, um gelöschte Audiodateien aus der Datenbank zu entfernen
     fun removeDeletedAudios(currentIds: List<Int>) {
+        if (currentIds.isEmpty()) return  // Nichts löschen wenn MediaStore leer
         val idList = currentIds.joinToString(",")
         writableDatabase.execSQL(
-            "DELETE FROM $TABLE_AUDIO WHERE $AUDIO_ID NOT IN ($idList)"
+            "DELETE FROM $TABLE_AUDIO WHERE $AUDIO_ID NOT IN ($idList) AND $AUDIO_SAVEPATH LIKE 'content://media%'"
         )
     }
 
@@ -249,6 +257,7 @@ class DataBaseHelper(context: Context) :
         return maxID + 1;
     }
 
+    //Methode, um alle Playlists aus der Datenbank zu holen
     fun getAllPlaylistsFromDB(): List<myPlaylist> {
         val audioList = mutableListOf<myPlaylist>();
         val query = "SELECT * FROM $TABLE_PLAYLIST";
@@ -277,8 +286,38 @@ class DataBaseHelper(context: Context) :
         db.insert(TABLE_PLAYLIST, null, container);
     }
 
+    //Methode, um alle Audiodateien einer Playlist zu holen
+    fun getAudiosByPlaylist(playlistID: Int): List<myAudio> {
+        val audioList = mutableListOf<myAudio>()
+        val query = """
+        SELECT * FROM $TABLE_AUDIO 
+        INNER JOIN $TABLE_PLAYAUDIO 
+        ON $TABLE_AUDIO.$AUDIO_ID = $TABLE_PLAYAUDIO.$FKPK_AUDIOPLAYLIST
+        WHERE $TABLE_PLAYAUDIO.$FKPK_PLAYLISTAUDIO = $playlistID
+    """
+        val cursor = readableDatabase.rawQuery(query, null)
+        if (cursor.moveToFirst()) {
+            do {
+                val audio = myAudio()
+                audio.audioID = cursor.getInt(0)
+                audio.audioTitle = cursor.getString(1)
+                audio.audioArtist = cursor.getString(2)
+                audio.audioGenre = cursor.getString(3)
+                audio.audioRelDate = cursor.getString(4)
+                audio.audioPath = cursor.getString(5)
+                audioList.add(audio)
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return audioList
+    }
+
     //Methode für das Löschen eines Eintrags aus der Datenbank
     fun deletePlaylistEntry(playList: myPlaylist): Boolean {
+        if (playList.playlistID == 1) {
+            Log.e(TAG, "Die Alle-Playlist kann nicht gelöscht werden")
+            return false
+        }
         val deleteString: String =
             "DELETE FROM ${TABLE_PLAYLIST} WHERE ${PLAYLIST_ID} = ${playList.playlistID}";
         val db = writableDatabase;
