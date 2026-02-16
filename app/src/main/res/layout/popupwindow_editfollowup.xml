@@ -12,14 +12,14 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Playlist umbenennen"
+        android:text="@string/playlistDescHint"
         android:textSize="16sp"
         android:paddingBottom="8dp"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Neuer Name"
+        android:hint="@string/playlistNameHint"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -34,6 +34,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Speichern"/>
+        android:text="@string/confirmation"/>
 
 </LinearLayout>

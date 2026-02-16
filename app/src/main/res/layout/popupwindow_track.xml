@@ -13,7 +13,7 @@
         android:id="@+id/btnEditAudioPopUp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Bearbeiten"
+        android:text="@string/bearbeitenAnweisung"
         app:icon="@drawable/edit_24px"
         style="@style/Widget.Material3.Button.TextButton"/>
 
@@ -21,7 +21,7 @@
         android:id="@+id/btnDeleteAudioPopUp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Löschen"
+        android:text="@string/loeschenAnweisung"
         app:icon="@drawable/delete_24px"
         style="@style/Widget.Material3.Button.TextButton"/>
 
@@ -29,7 +29,7 @@
         android:id="@+id/btnAddToPlaylistPopUp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Zur Playlist hinzufügen"
+        android:text="@string/addToPlaylist"
         app:icon="@drawable/playlist_add_24px"
         style="@style/Widget.Material3.Button.TextButton"/>
 
@@ -37,7 +37,7 @@
         android:id="@+id/btnRemoveFromPlaylistPopUp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Von Playlist entfernen"
+        android:text="@string/remFromPlaylist"
         app:icon="@drawable/playlist_remove_24px"
         style="@style/Widget.Material3.Button.TextButton"/>
 

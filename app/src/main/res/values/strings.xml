@@ -1,4 +1,16 @@
 <resources>
     <string name="app_name">AndroidProjektAudioPlayer</string>
     <string name="notFound">Nicht angegeben</string>
+    <string name="loeschenAnweisung">Löschen</string>
+    <string name="bearbeitenAnweisung">Bearbeiten</string>
+    <string name="addToPlaylist">Zur Playlist hinzufügen</string>
+    <string name="remFromPlaylist">Von Playlist entfernen</string>
+    <string name="confirmation">Speichern</string>
+
+    <string name="playlistNameHint">Neuer Name</string>
+    <string name="playlistDescHint">Playlist umbennen</string>
+    <string name="playlistMainHint">Playlist Name</string>
+
+    <string name="playlist">Playlist</string>
+    <string name="audio">Audiodatei</string>
 </resources>

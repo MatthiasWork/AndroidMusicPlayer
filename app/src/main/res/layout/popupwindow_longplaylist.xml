@@ -12,7 +12,7 @@
         android:id="@+id/btnEditPopUp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Bearbeiten"
+        android:text="@string/bearbeitenAnweisung"
         app:icon="@drawable/edit_24px"
         style="@style/Widget.Material3.Button.TextButton"/>
 
@@ -20,7 +20,7 @@
         android:id="@+id/btnDeletePopUp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Löschen"
+        android:text="@string/loeschenAnweisung"
         app:icon="@drawable/delete_24px"
         style="@style/Widget.Material3.Button.TextButton"/>
 
