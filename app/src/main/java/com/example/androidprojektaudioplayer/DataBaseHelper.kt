@@ -208,15 +208,14 @@ class DataBaseHelper(context: Context) :
 
     //Methode für das Löschen eines Eintrags aus der Datenbank
     fun deleteAudioEntry(track: myAudio): Boolean {
-        val deleteString: String =
-            "DELETE FROM ${TABLE_AUDIO} WHERE ${AUDIO_ID} = ${track.audioID}";
-        val db = writableDatabase;
+        val db = writableDatabase
         try {
-            db.execSQL(deleteString);
+            db.execSQL("DELETE FROM $TABLE_PLAYAUDIO WHERE $FKPK_AUDIOPLAYLIST = ${track.audioID}")
+            db.execSQL("DELETE FROM $TABLE_AUDIO WHERE $AUDIO_ID = ${track.audioID}")
         } catch (ex: Exception) {
             Log.e(TAG, "Fehler beim Loeschen des Eintrags ${track.audioTitle} aus Datenbank \n $ex")
         }
-        return true;
+        return true
     }
 
     //Methode für das Bearbeiten eines Eintrags aus der Datenbank
@@ -240,6 +239,13 @@ class DataBaseHelper(context: Context) :
         container.put(FKPK_AUDIOPLAYLIST, audioID)
         container.put(FKPK_PLAYLISTAUDIO, playlistID)
         db.insert(TABLE_PLAYAUDIO, null, container);
+    }
+
+    //Methode, um eine Verknüpfung zwischen Audio und Playlist zu entfernen
+    fun removeAudioFromPlaylist(audioID: Int, playlistID: Int) {
+        writableDatabase.execSQL(
+            "DELETE FROM $TABLE_PLAYAUDIO WHERE $FKPK_AUDIOPLAYLIST = $audioID AND $FKPK_PLAYLISTAUDIO = $playlistID"
+        )
     }
     //endregion
 

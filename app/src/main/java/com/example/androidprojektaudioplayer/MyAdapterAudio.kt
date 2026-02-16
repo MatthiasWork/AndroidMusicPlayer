@@ -14,8 +14,9 @@ import com.google.android.material.textfield.TextInputEditText
 class MyAdapterAudio(
     private val audioList: MutableList<myAudio>,
     private val contextExt: Context,
+    private val currentPlaylistID: Int,
     private val onTrackClicked: (myAudio) -> Unit,
-    private val onTrackDeleted: (myAudio) -> Unit,
+    private val onTrackRemovedFromPlaylist: (myAudio) -> Unit,
     private val onTrackEdited: (myAudio) -> Unit,
     private val onAddToPlaylist: (myAudio) -> Unit,
     private val onRemoveFromPlaylist: (myAudio) -> Unit
@@ -48,8 +49,13 @@ class MyAdapterAudio(
                 true
             );
 
+            if (currentPlaylistID == 1) {
+                popupView.findViewById<MaterialButton>(R.id.btnDeleteAudioPopUp).visibility = View.GONE
+            } else {
+                popupView.findViewById<MaterialButton>(R.id.btnDeleteAudioPopUp).visibility = View.VISIBLE
+            }
             popupView.findViewById<MaterialButton>(R.id.btnDeleteAudioPopUp).setOnClickListener {
-                onTrackDeleted(currentTrack);
+                onTrackRemovedFromPlaylist(currentTrack);
                 popupWindow.dismiss();
             }
             popupView.findViewById<MaterialButton>(R.id.btnEditAudioPopUp).setOnClickListener {

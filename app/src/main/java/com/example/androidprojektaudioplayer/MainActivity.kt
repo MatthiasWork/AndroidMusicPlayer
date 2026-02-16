@@ -370,21 +370,21 @@ class MainActivity : AppCompatActivity() {
 
         binding.rvAudioTracks.layoutManager = LinearLayoutManager(this)
         val adapter = MyAdapterAudio(
-            songList, this,
-            onTrackClicked = { track -> playTrack(track); },
-            onTrackDeleted = { track ->
-                myDB.deleteAudioEntry(track);
-                ladeAudioDateien();
+            songList, this, currentPlaylistID,
+            onTrackClicked = { track -> playTrack(track) },
+            onTrackRemovedFromPlaylist = { track ->
+                myDB.removeAudioFromPlaylist(track.audioID, currentPlaylistID);
+                ladeAudioDateien()
             },
             onTrackEdited = { track ->
-                myDB.editAudioEntry(track);
-                ladeAudioDateien();
+                myDB.editAudioEntry(track)
+                ladeAudioDateien()
             },
             onAddToPlaylist = { track ->
-                //myDB.addAudioToPlaylist(track.audioID);
-                ladeAudioDateien();
+                ladeAudioDateien()
             },
             onRemoveFromPlaylist = { track ->
+
             }
         )
         binding.rvAudioTracks.adapter = adapter
