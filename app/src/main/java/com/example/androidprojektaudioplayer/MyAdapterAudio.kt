@@ -9,6 +9,7 @@ import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 
 class MyAdapterAudio(
     private val audioList: MutableList<myAudio>,
@@ -52,8 +53,26 @@ class MyAdapterAudio(
                 popupWindow.dismiss();
             }
             popupView.findViewById<MaterialButton>(R.id.btnEditAudioPopUp).setOnClickListener {
-                onTrackEdited(currentTrack)
                 popupWindow.dismiss()
+                val editView = inflater.inflate(R.layout.popupwindow_track_edit, null)
+                val editPopup = PopupWindow(editView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true)
+
+                editView.findViewById<TextInputEditText>(R.id.etEditAudioTitle).setText(currentTrack.audioTitle)
+                editView.findViewById<TextInputEditText>(R.id.etEditAudioArtist).setText(currentTrack.audioArtist)
+                editView.findViewById<TextInputEditText>(R.id.etEditAudioGenre).setText(currentTrack.audioGenre)
+                editView.findViewById<TextInputEditText>(R.id.etEditAudioDate).setText(currentTrack.audioRelDate)
+
+                editView.findViewById<MaterialButton>(R.id.btnSaveEditAudio).setOnClickListener {
+                    currentTrack.audioTitle = editView.findViewById<TextInputEditText>(R.id.etEditAudioTitle).text.toString()
+                    currentTrack.audioArtist = editView.findViewById<TextInputEditText>(R.id.etEditAudioArtist).text.toString()
+                    currentTrack.audioGenre = editView.findViewById<TextInputEditText>(R.id.etEditAudioGenre).text.toString()
+                    currentTrack.audioRelDate = editView.findViewById<TextInputEditText>(R.id.etEditAudioDate).text.toString()
+                    onTrackEdited(currentTrack)
+                    notifyItemChanged(position)
+                    editPopup.dismiss()
+                }
+
+                editPopup.showAsDropDown(holder.btnMore)
             }
             popupView.findViewById<MaterialButton>(R.id.btnAddToPlaylistPopUp).setOnClickListener {
                 onAddToPlaylist(currentTrack)

@@ -185,7 +185,7 @@ class DataBaseHelper(context: Context) :
 
     //Methode, um gelöschte Audiodateien aus der Datenbank zu entfernen
     fun removeDeletedAudios(currentIds: List<Int>) {
-        if (currentIds.isEmpty()) return  // Nichts löschen wenn MediaStore leer
+        if (currentIds.isEmpty()) return
         val idList = currentIds.joinToString(",")
         writableDatabase.execSQL(
             "DELETE FROM $TABLE_AUDIO WHERE $AUDIO_ID NOT IN ($idList) AND $AUDIO_SAVEPATH LIKE 'content://media%'"
