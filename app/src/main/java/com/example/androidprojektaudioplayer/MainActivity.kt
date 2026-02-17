@@ -284,15 +284,10 @@ class MainActivity : AppCompatActivity() {
 
         // Button für Detailsicht
         binding.cardOpenDetail.setOnClickListener {
-            // Aktuell spielenden Track zur DetailActivity schicken
             if (currentTrackIndex >= 0 && currentTrackIndex < songList.size) {
-                val track = songList[currentTrackIndex]
                 val intent = Intent(this, DetailActivity::class.java)
-                intent.putExtra("audioID", track.audioID)
-                intent.putExtra("audioTitle", track.audioTitle)
-                intent.putExtra("audioArtist", track.audioArtist)
-                intent.putExtra("audioRelDate", track.audioRelDate)
-                intent.putExtra("audioPath", track.audioPath)
+                intent.putExtra("trackList", ArrayList(songList))
+                intent.putExtra("currentIndex", currentTrackIndex)
                 startActivity(intent)
             }
         }
