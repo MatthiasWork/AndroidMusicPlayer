@@ -23,8 +23,8 @@ class MyAdapterPlaylistSelect(
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val currentPlaylist = playlistList[position]
         holder.tvPlaylistName.text = currentPlaylist.playlistTitle
+        holder.cbPlaylist.setOnCheckedChangeListener(null)
         holder.cbPlaylist.isChecked = selectedPlaylists.contains(currentPlaylist.playlistID)
-
         holder.cbPlaylist.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 selectedPlaylists.add(currentPlaylist.playlistID)

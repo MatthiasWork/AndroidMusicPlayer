@@ -51,8 +51,10 @@ class MyAdapterAudio(
 
             if (currentPlaylistID == 1) {
                 popupView.findViewById<MaterialButton>(R.id.btnDeleteAudioPopUp).visibility = View.GONE
+                popupView.findViewById<MaterialButton>(R.id.btnRemoveFromPlaylistPopUp).visibility = View.GONE
             } else {
                 popupView.findViewById<MaterialButton>(R.id.btnDeleteAudioPopUp).visibility = View.VISIBLE
+                popupView.findViewById<MaterialButton>(R.id.btnRemoveFromPlaylistPopUp).visibility = View.VISIBLE
             }
             popupView.findViewById<MaterialButton>(R.id.btnDeleteAudioPopUp).setOnClickListener {
                 onTrackRemovedFromPlaylist(currentTrack);

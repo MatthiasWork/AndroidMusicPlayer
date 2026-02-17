@@ -385,12 +385,16 @@ class MainActivity : AppCompatActivity() {
                 val bottomSheet = BottomSheetDialog(this)
                 val view = layoutInflater.inflate(R.layout.playlist_selectorholder, null)
 
-                // Alle Playlists außer "Alle" laden
                 val playlists = myDB.getAllPlaylistsFromDB()
                     .filter { it.playlistID != 1 }
                     .toMutableList()
 
                 val selectionAdapter = MyAdapterPlaylistSelect(playlists)
+
+                // Bereits vorhandene Verknüpfungen vorauswählen
+                val existingPlaylists = myDB.getPlaylistIDsForAudio(track.audioID)
+                selectionAdapter.selectedPlaylists.addAll(existingPlaylists)
+
                 view.findViewById<RecyclerView>(R.id.rvPlaylistSelection).apply {
                     layoutManager = LinearLayoutManager(this@MainActivity)
                     adapter = selectionAdapter
@@ -398,7 +402,14 @@ class MainActivity : AppCompatActivity() {
 
                 view.findViewById<MaterialButton>(R.id.btnConfirmAddToPlaylist).setOnClickListener {
                     for (playlistID in selectionAdapter.selectedPlaylists) {
-                        myDB.addAudioToPlaylist(track.audioID, playlistID)
+                        if (!existingPlaylists.contains(playlistID)) {
+                            myDB.addAudioToPlaylist(track.audioID, playlistID)
+                        }
+                    }
+                    for (playlistID in existingPlaylists) {
+                        if (!selectionAdapter.selectedPlaylists.contains(playlistID)) {
+                            myDB.removeAudioFromPlaylist(track.audioID, playlistID)
+                        }
                     }
                     ladeAudioDateien()
                     bottomSheet.dismiss()
@@ -408,7 +419,8 @@ class MainActivity : AppCompatActivity() {
                 bottomSheet.show()
             },
             onRemoveFromPlaylist = { track ->
-
+                myDB.removeAudioFromPlaylist(track.audioID, currentPlaylistID)
+                ladeAudioDateien();
             }
         )
         binding.rvAudioTracks.adapter = adapter

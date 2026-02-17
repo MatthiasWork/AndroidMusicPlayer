@@ -263,6 +263,20 @@ class DataBaseHelper(context: Context) :
         return maxID + 1;
     }
 
+    //Methode, um alle Playlist-IDs eines Audios zu holen
+    fun getPlaylistIDsForAudio(audioID: Int): List<Int> {
+        val ids = mutableListOf<Int>()
+        val query = "SELECT $FKPK_PLAYLISTAUDIO FROM $TABLE_PLAYAUDIO WHERE $FKPK_AUDIOPLAYLIST = $audioID"
+        val cursor = readableDatabase.rawQuery(query, null)
+        if (cursor.moveToFirst()) {
+            do {
+                ids.add(cursor.getInt(0))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return ids
+    }
+
     //Methode, um alle Playlists aus der Datenbank zu holen
     fun getAllPlaylistsFromDB(): List<myPlaylist> {
         val audioList = mutableListOf<myPlaylist>();
