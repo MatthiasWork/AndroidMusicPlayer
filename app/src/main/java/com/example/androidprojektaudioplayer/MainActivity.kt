@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.androidprojektaudioplayer.databinding.ActivityMainBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -381,7 +382,30 @@ class MainActivity : AppCompatActivity() {
                 ladeAudioDateien()
             },
             onAddToPlaylist = { track ->
-                ladeAudioDateien()
+                val bottomSheet = BottomSheetDialog(this)
+                val view = layoutInflater.inflate(R.layout.playlist_selectorholder, null)
+
+                // Alle Playlists außer "Alle" laden
+                val playlists = myDB.getAllPlaylistsFromDB()
+                    .filter { it.playlistID != 1 }
+                    .toMutableList()
+
+                val selectionAdapter = MyAdapterPlaylistSelect(playlists)
+                view.findViewById<RecyclerView>(R.id.rvPlaylistSelection).apply {
+                    layoutManager = LinearLayoutManager(this@MainActivity)
+                    adapter = selectionAdapter
+                }
+
+                view.findViewById<MaterialButton>(R.id.btnConfirmAddToPlaylist).setOnClickListener {
+                    for (playlistID in selectionAdapter.selectedPlaylists) {
+                        myDB.addAudioToPlaylist(track.audioID, playlistID)
+                    }
+                    ladeAudioDateien()
+                    bottomSheet.dismiss()
+                }
+
+                bottomSheet.setContentView(view)
+                bottomSheet.show()
             },
             onRemoveFromPlaylist = { track ->
 
