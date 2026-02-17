@@ -282,6 +282,21 @@ class MainActivity : AppCompatActivity() {
             bottomSheet.show()
         }
 
+        // Button für Detailsicht
+        binding.cardOpenDetail.setOnClickListener {
+            // Aktuell spielenden Track zur DetailActivity schicken
+            if (currentTrackIndex >= 0 && currentTrackIndex < songList.size) {
+                val track = songList[currentTrackIndex]
+                val intent = Intent(this, DetailActivity::class.java)
+                intent.putExtra("audioID", track.audioID)
+                intent.putExtra("audioTitle", track.audioTitle)
+                intent.putExtra("audioArtist", track.audioArtist)
+                intent.putExtra("audioRelDate", track.audioRelDate)
+                intent.putExtra("audioPath", track.audioPath)
+                startActivity(intent)
+            }
+        }
+
     }
 
     //Methode um die Berechtigungen zu überprüfen
