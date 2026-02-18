@@ -18,14 +18,6 @@
         style="@style/Widget.Material3.Button.TextButton"/>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnDeleteAudioPopUp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/loeschenAnweisung"
-        app:icon="@drawable/delete_24px"
-        style="@style/Widget.Material3.Button.TextButton"/>
-
-    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnAddToPlaylistPopUp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

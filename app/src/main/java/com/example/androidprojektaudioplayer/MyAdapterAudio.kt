@@ -16,7 +16,6 @@ class MyAdapterAudio(
     private val contextExt: Context,
     private val currentPlaylistID: Int,
     private val onTrackClicked: (myAudio) -> Unit,
-    private val onTrackRemovedFromPlaylist: (myAudio) -> Unit,
     private val onTrackEdited: (myAudio) -> Unit,
     private val onAddToPlaylist: (myAudio) -> Unit,
     private val onRemoveFromPlaylist: (myAudio) -> Unit
@@ -50,16 +49,11 @@ class MyAdapterAudio(
             );
 
             if (currentPlaylistID == 1) {
-                popupView.findViewById<MaterialButton>(R.id.btnDeleteAudioPopUp).visibility = View.GONE
                 popupView.findViewById<MaterialButton>(R.id.btnRemoveFromPlaylistPopUp).visibility = View.GONE
             } else {
-                popupView.findViewById<MaterialButton>(R.id.btnDeleteAudioPopUp).visibility = View.VISIBLE
                 popupView.findViewById<MaterialButton>(R.id.btnRemoveFromPlaylistPopUp).visibility = View.VISIBLE
             }
-            popupView.findViewById<MaterialButton>(R.id.btnDeleteAudioPopUp).setOnClickListener {
-                onTrackRemovedFromPlaylist(currentTrack);
-                popupWindow.dismiss();
-            }
+
             popupView.findViewById<MaterialButton>(R.id.btnEditAudioPopUp).setOnClickListener {
                 popupWindow.dismiss()
                 val editView = inflater.inflate(R.layout.popupwindow_track_edit, null)

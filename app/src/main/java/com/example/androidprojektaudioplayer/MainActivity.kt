@@ -468,10 +468,6 @@ class MainActivity : AppCompatActivity() {
         val adapter = MyAdapterAudio(
             songList, this, currentPlaylistID,
             onTrackClicked = { track -> playTrack(track) },
-            onTrackRemovedFromPlaylist = { track ->
-                myDB.deleteAudioEntry(track)
-                ladeAudioDateien()
-            },
             onTrackEdited = { track ->
                 myDB.editAudioEntry(track)
                 ladeAudioDateien()
