@@ -3,64 +3,119 @@ class MainActivity {
   - DataBaseHelper myDB
   - MusicService musicService
   - List<myAudio> songList
-  + onCreate()
+  - Int currentPlaylistID
+  - Boolean order
+  - Handler handler
+  - ActivityResultLauncher filePickerLauncher
+  + onCreate(Bundle)
+  + onResume()
+  + onDestroy()
+  + onRequestPermissionsResult(Int, String[], Int[])
   + playTrack(myAudio)
   + loadAdapter()
+  + ladeAudioDateien()
+  - filterSongs(String)
 }
 
 class DetailActivity {
   - MusicService musicService
-  + onCreate()
-  + formatTime(Int)
+  - Handler handler
+  - Boolean serviceBound
+  + onCreate(Bundle)
+  + onDestroy()
+  - formatTime(Int): String
 }
 
 class MusicService {
   + MediaPlayer mediaPlayer
   + myAudio currentTrack
   + List<myAudio> trackList
+  + Int currentIndex
+  + onTrackChanged: ((myAudio) -> Unit)?
+  + onPlayStateChanged: ((Boolean) -> Unit)?
+  + onCreate()
+  + onBind(Intent): IBinder
+  + onStartCommand(Intent, Int, Int): Int
+  + onDestroy()
   + playTrack(myAudio, Int)
   + pause()
+  + resume()
+  + togglePlayPause()
   + next()
   + previous()
+  - createNotificationChannel()
+  - createNotification(): Notification
+  - updateNotification()
 }
 
 class DataBaseHelper {
-  + getAllAudiosFromDB()
-  + getAudiosByPlaylist(Int)
-  + getAllPlaylistsFromDB()
+  + onCreate(SQLiteDatabase)
+  + onOpen(SQLiteDatabase)
+  + onUpgrade(SQLiteDatabase, Int, Int)
+  + getAllMp3Files(Context): List<myAudio>
+  + getAllAudiosFromDB(): List<myAudio>
+  + getAudiosByPlaylist(Int): List<myAudio>
+  + getAllPlaylistsFromDB(): List<myPlaylist>
+  + getPlaylistIDsForAudio(Int): List<Int>
+  + getNextAvailableAudioID(): Int
+  + getNextAvailablePlaylistID(): Int
+  + audioExists(Int): Boolean
+  + addAudioToDatabase(myAudio)
   + addAudioToPlaylist(Int, Int)
+  + removeAudioFromPlaylist(Int, Int)
+  + addPlaylistToDatabase(myPlaylist)
+  + deleteAudioEntry(myAudio): Boolean
+  + deletePlaylistEntry(myPlaylist): Boolean
+  + editAudioEntry(myAudio): Boolean
+  + editPlaylistEntry(myPlaylist): Boolean
+  + removeDeletedAudios(List<Int>)
 }
 
 class myAudio {
   + Int audioID
   + String audioTitle
   + String audioArtist
+  + String audioGenre
   + String audioPath
+  + String audioRelDate
+  + toString(): String
 }
 
 class myPlaylist {
   + Int playlistID
   + String playlistTitle
+  + toString(): String
 }
 
 class myAudioPlaylist {
   + Int audioPlaylistFKPK
   + Int playlistAudioFKPK
+  + toString(): String
 }
 
 class MyAdapterAudio {
   - List<myAudio> audioList
-  + onBindViewHolder()
+  - Context contextExt
+  - Int currentPlaylistID
+  + onCreateViewHolder(ViewGroup, Int): ViewHolder
+  + onBindViewHolder(ViewHolder, Int)
+  + getItemCount(): Int
 }
 
 class MyAdapterPlaylist {
   - List<myPlaylist> playlistList
-  + onBindViewHolder()
+  - Context contextExt
+  + onCreateViewHolder(ViewGroup, Int): ViewHolder
+  + onBindViewHolder(ViewHolder, Int)
+  + getItemCount(): Int
 }
 
 class MyAdapterPlaylistSelect {
   - List<myPlaylist> playlistList
-  + selectedPlaylists
+  + Set<Int> selectedPlaylists
+  + onCreateViewHolder(ViewGroup, Int): ViewHolder
+  + onBindViewHolder(ViewHolder, Int)
+  + getItemCount(): Int
 }
 
 MainActivity --> MusicService

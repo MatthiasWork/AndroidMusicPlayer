@@ -5,13 +5,16 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Binder
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import androidx.core.app.NotificationCompat
 
 class MusicService : Service() {
@@ -24,6 +27,15 @@ class MusicService : Service() {
     private val CHANNEL_ID = "MusicPlayerChannel"
     private val NOTIFICATION_ID = 1
 
+    // Handler für regelmäßiges Speichern
+    private val saveStateHandler = Handler(Looper.getMainLooper())
+    private val saveStateRunnable = object : Runnable {
+        override fun run() {
+            savePlaybackState()
+            saveStateHandler.postDelayed(this, 1000)  // Jede Sekunde
+        }
+    }
+
     // Callbacks für UI-Updates
     var onTrackChanged: ((myAudio) -> Unit)? = null
     var onPlayStateChanged: ((Boolean) -> Unit)? = null
@@ -35,6 +47,7 @@ class MusicService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        saveStateHandler.post(saveStateRunnable)  // Starten
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -68,6 +81,7 @@ class MusicService : Service() {
         // Vordergrund-Service starten mit Notification
         startForeground(NOTIFICATION_ID, createNotification())
 
+        savePlaybackState()  // State speichern
         onTrackChanged?.invoke(track)
         onPlayStateChanged?.invoke(true)
     }
@@ -76,6 +90,7 @@ class MusicService : Service() {
         if (mediaPlayer.isPlaying) {
             mediaPlayer.pause()
             updateNotification()
+            savePlaybackState()  // State speichern
             onPlayStateChanged?.invoke(false)
         }
     }
@@ -84,6 +99,7 @@ class MusicService : Service() {
         if (!mediaPlayer.isPlaying) {
             mediaPlayer.start()
             updateNotification()
+            savePlaybackState()  // State speichern
             onPlayStateChanged?.invoke(true)
         }
     }
@@ -190,9 +206,22 @@ class MusicService : Service() {
         notificationManager.notify(NOTIFICATION_ID, createNotification())
     }
 
+    private fun savePlaybackState() {
+        val prefs = getSharedPreferences("MusicPlayerPrefs", Context.MODE_PRIVATE)
+        prefs.edit().apply {
+            putInt("currentTrackID", currentTrack?.audioID ?: -1)
+            putInt("currentPosition", mediaPlayer.currentPosition)
+            putInt("currentIndex", currentIndex)
+            putBoolean("wasPlaying", mediaPlayer.isPlaying)
+            apply()
+        }
+    }
+
     override fun onDestroy() {
-        super.onDestroy()
+        saveStateHandler.removeCallbacks(saveStateRunnable)  // Stoppen
+        savePlaybackState()
         mediaPlayer.release()
         stopForeground(STOP_FOREGROUND_REMOVE)
+        super.onDestroy()
     }
 }

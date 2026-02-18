@@ -55,6 +55,7 @@ class MainActivity : AppCompatActivity() {
             musicService = binder.getService()
             serviceBound = true
 
+            // Callbacks registrieren
             musicService?.onTrackChanged = { track ->
                 binding.tvTitleText.text = track.audioTitle
                 binding.tvSubTitleText.text = track.audioArtist
@@ -64,14 +65,14 @@ class MainActivity : AppCompatActivity() {
                 handler.post(updateSeekBar)
             }
 
-            // Änderung des Symbols für Play/Pause
             musicService?.onPlayStateChanged = { isPlaying ->
-                if (isPlaying) {
-                    binding.btnPause.setIconResource(R.drawable.pause_24px);
-                } else {
-                    binding.btnPause.setIconResource(R.drawable.play_arrow_24px);
-                }
+                binding.btnPause.setIconResource(
+                    if (isPlaying) R.drawable.pause_24px else R.drawable.play_arrow_24px
+                )
             }
+
+            // HIER HINZUFÜGEN
+            restorePlaybackState()
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -313,6 +314,8 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, DetailActivity::class.java)
             startActivity(intent)
         }
+
+
     }
 
     //Methode zum fragen nach der Berechtigung
@@ -331,39 +334,14 @@ class MainActivity : AppCompatActivity() {
 
     //Wird aufgerufen, wenn die Activity im Fokus ist
     override fun onResume() {
-        super.onResume();
+        super.onResume()
         if (songList.isEmpty()) {
-            ladeAudioDateien();
+            ladeAudioDateien()
         }
 
-        musicService?.let { service ->
-            service.onTrackChanged = { track ->
-                binding.tvTitleText.text = track.audioTitle;
-                binding.tvSubTitleText.text = track.audioArtist;
-                binding.sbProgress.max = service.mediaPlayer.duration;
-                binding.sbProgress.progress = 0;
-                handler.removeCallbacks(updateSeekBar);
-                handler.post(updateSeekBar);
-            }
-
-            service.onPlayStateChanged = { isPlaying ->
-                if (isPlaying) {
-                    binding.btnPause.setIconResource(R.drawable.pause_24px);
-                } else {
-                    binding.btnPause.setIconResource(R.drawable.play_arrow_24px);
-                }
-            }
-
-            service.currentTrack?.let { track ->
-                binding.tvTitleText.text = track.audioTitle
-                binding.tvSubTitleText.text = track.audioArtist
-                binding.sbProgress.max = service.mediaPlayer.duration
-                binding.sbProgress.progress = service.mediaPlayer.currentPosition
-                binding.btnPause.setIconResource(
-                    if (service.mediaPlayer.isPlaying) R.drawable.pause_24px else R.drawable.play_arrow_24px
-                )
-                handler.post(updateSeekBar)
-            }
+        // UI aktualisieren wenn Service bereits läuft
+        if (serviceBound) {
+            restorePlaybackState()
         }
     }
 
@@ -374,6 +352,59 @@ class MainActivity : AppCompatActivity() {
         if (serviceBound) {
             unbindService(serviceConnection);
             serviceBound = false;
+        }
+    }
+
+    private fun restorePlaybackState() {
+        musicService?.let { service ->
+            // Wenn Service bereits einen Track hat, UI aktualisieren
+            if (service.currentTrack != null) {
+                service.currentTrack?.let { track ->
+                    binding.tvTitleText.text = track.audioTitle
+                    binding.tvSubTitleText.text = track.audioArtist
+
+                    // WICHTIG: Nur wenn MediaPlayer bereit ist
+                    try {
+                        if (service.mediaPlayer.duration > 0) {
+                            binding.sbProgress.max = service.mediaPlayer.duration
+                            binding.sbProgress.progress = service.mediaPlayer.currentPosition
+                        }
+                    } catch (e: Exception) {
+                        // MediaPlayer noch nicht bereit
+                    }
+
+                    binding.btnPause.setIconResource(
+                        if (service.mediaPlayer.isPlaying) R.drawable.pause_24px
+                        else R.drawable.play_arrow_24px
+                    )
+                    handler.post(updateSeekBar)
+                }
+            } else {
+                // Kein Track im Service - aus SharedPreferences wiederherstellen
+                val prefs = getSharedPreferences("MusicPlayerPrefs", MODE_PRIVATE)
+                val trackID = prefs.getInt("currentTrackID", -1)
+                val position = prefs.getInt("currentPosition", 0)
+                val wasPlaying = prefs.getBoolean("wasPlaying", false)
+
+                if (trackID == -1 || songList.isEmpty()) return
+
+                val track = songList.find { it.audioID == trackID } ?: return
+                val index = songList.indexOf(track)
+                if (index == -1) return
+
+                service.trackList = songList
+                service.playTrack(track, index)
+
+                // WICHTIG: Position NACH playTrack setzen mit Delay
+                handler.postDelayed({
+                    try {
+                        service.mediaPlayer.seekTo(position)
+                        if (!wasPlaying) service.pause()
+                    } catch (e: Exception) {
+                        // Ignorieren
+                    }
+                }, 500)
+            }
         }
     }
 
@@ -520,7 +551,6 @@ class MainActivity : AppCompatActivity() {
             }
         )
         binding.rvPlaylists.adapter = playListAdapter
-
-        loadAdapter()
+        loadAdapter();
     }
 }
