@@ -8,6 +8,16 @@
     android:padding="24dp"
     android:id="@+id/detailsMain">
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:icon="@drawable/arrow_back_24px"
+        app:iconSize="26dp"
+        style="@style/Widget.Material3.Button.IconButton"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
     <!-- Titel Box -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardTitle"

@@ -34,7 +34,9 @@ class MyAdapterPlaylistSelect(
         }
     }
 
-    override fun getItemCount() = playlistList.size
+    override fun getItemCount(): Int {
+        return playlistList.size
+    }
 
     class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val cbPlaylist: CheckBox = itemView.findViewById(R.id.cbPlaylist)

@@ -1,11 +1,14 @@
 <resources>
-    <string name="app_name">AndroidProjektAudioPlayer</string>
+    <string name="app_name">Soundio</string>
     <string name="notFound">Nicht angegeben</string>
     <string name="loeschenAnweisung">Löschen</string>
     <string name="bearbeitenAnweisung">Bearbeiten</string>
     <string name="addToPlaylist">Zur Playlist hinzufügen</string>
     <string name="remFromPlaylist">Von Playlist entfernen</string>
     <string name="confirmation">Speichern</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="playPause">Play/Pause</string>
 
     <string name="playlistNameHint">Neuer Name</string>
     <string name="playlistDescHint">Playlist umbennen</string>

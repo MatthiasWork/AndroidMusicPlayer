@@ -53,13 +53,9 @@ class DataBaseHelper(context: Context) :
                     ", FOREIGN KEY($FKPK_PLAYLISTAUDIO) REFERENCES $TABLE_PLAYLIST($PLAYLIST_ID) ON DELETE CASCADE)";
 
         if (db is SQLiteDatabase) {
-
             db.execSQL(sqlStringCreateTableAudio);
-
             db.execSQL(sqlStringCreateTablePlaylist);
-
             db.execSQL(sqlStringCreateTableInter);
-
             val container = ContentValues()
             container.put(PLAYLIST_TITLE, "Alle")
             db.insert(TABLE_PLAYLIST, null, container)
@@ -69,7 +65,7 @@ class DataBaseHelper(context: Context) :
         }
     }
 
-    //region Methode zum Holen der MP3-Dateien
+    //Methode zum Holen der MP3-Dateien
     fun getAllMp3Files(context: Context): List<myAudio> {
         val mp3List = mutableListOf<myAudio>()
         val projection = arrayOf(
@@ -118,8 +114,6 @@ class DataBaseHelper(context: Context) :
         }
         return mp3List;
     }
-    //endregion
-
 
     //Methode zum Erneuern der db Version
     //Nicht verwendet
@@ -250,6 +244,8 @@ class DataBaseHelper(context: Context) :
     //endregion
 
     //region CRUD für Playlist
+
+    //Methode um die nächst verfügbare ID zu bekommen
     fun getNextAvailablePlaylistID(): Int {
         val myQuery: String = "SELECT MAX(${PLAYLIST_ID}) FROM ${TABLE_PLAYLIST}";
         val db: SQLiteDatabase = readableDatabase;

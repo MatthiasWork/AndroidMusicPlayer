@@ -2,15 +2,15 @@ package com.example.androidprojektaudioplayer
 
 import android.Manifest
 import android.app.DatePickerDialog
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
-import android.media.AudioAttributes
 import android.media.AudioManager
-import android.media.MediaPlayer
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.os.IBinder
 import android.os.Looper
 import android.view.View
 import android.widget.LinearLayout
@@ -24,7 +24,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.androidprojektaudioplayer.databinding.ActivityMainBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -34,27 +33,59 @@ import com.google.android.material.textfield.TextInputLayout
 import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var myDB: DataBaseHelper
-    private var mediaPlayer: MediaPlayer = MediaPlayer()
-    private var currentUri: String = ""
+    private lateinit var binding: ActivityMainBinding;
+    private lateinit var myDB: DataBaseHelper;
+    private var musicService: MusicService? = null;
+    private var serviceBound = false;
     private var order: Boolean = false;
-    private val handler = Handler(Looper.getMainLooper())
-    private var songList: MutableList<myAudio> = mutableListOf<myAudio>();
-    private var currentTrackIndex: Int = -1
-    private var currentPlaylistID: Int = 1
-    private lateinit var filePickerLauncher: ActivityResultLauncher<Intent>
-    private var currentPathField: TextInputEditText? = null
+    private val handler = Handler(Looper.getMainLooper());
+    private var songList: MutableList<myAudio> = mutableListOf();
+    private var currentPlaylistID: Int = 1;
+    private lateinit var filePickerLauncher: ActivityResultLauncher<Intent>;
+    private var currentPathField: TextInputEditText? = null;
 
-    enum class SortOption { NAME, ARTIST, GENRE, RELEASE }
+    //Enum für die Sortierungsoptionen
+    enum class SortOption { NAME, ARTIST, GENRE, RELEASE };
+    private var currentSortOption: SortOption = SortOption.NAME;
 
-    private var currentSortOption: SortOption = SortOption.NAME
+    //Verbindung zum Service, der die Musik abspielt
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as MusicService.MusicBinder
+            musicService = binder.getService()
+            serviceBound = true
 
-    // Runnable der die SeekBar jede Sekunde aktualisiert
+            musicService?.onTrackChanged = { track ->
+                binding.tvTitleText.text = track.audioTitle
+                binding.tvSubTitleText.text = track.audioArtist
+                binding.sbProgress.max = musicService?.mediaPlayer?.duration ?: 0
+                binding.sbProgress.progress = 0
+                handler.removeCallbacks(updateSeekBar)
+                handler.post(updateSeekBar)
+            }
+
+            // Änderung des Symbols für Play/Pause
+            musicService?.onPlayStateChanged = { isPlaying ->
+                if (isPlaying) {
+                    binding.btnPause.setIconResource(R.drawable.pause_24px);
+                } else {
+                    binding.btnPause.setIconResource(R.drawable.play_arrow_24px);
+                }
+            }
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            serviceBound = false
+        }
+    }
+
+    //Seekbar für den Verlauf des Songs
     private val updateSeekBar = object : Runnable {
         override fun run() {
-            if (mediaPlayer.isPlaying) {
-                binding.sbProgress.progress = mediaPlayer.currentPosition
+            musicService?.let {
+                if (it.mediaPlayer.isPlaying) {
+                    binding.sbProgress.progress = it.mediaPlayer.currentPosition
+                }
             }
             handler.postDelayed(this, 1000)
         }
@@ -73,14 +104,19 @@ class MainActivity : AppCompatActivity() {
 
         myDB = DataBaseHelper(this)
 
-        // SeekBar Listener - wenn Nutzer die Position ändert
+        // Service starten und binden
+        Intent(this, MusicService::class.java).also { intent ->
+            startService(intent)
+            bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+        }
+
+        // SeekBar Listener
         binding.sbProgress.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    mediaPlayer.seekTo(progress)
+                    musicService?.mediaPlayer?.seekTo(progress)
                 }
             }
-
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
@@ -93,16 +129,15 @@ class MainActivity : AppCompatActivity() {
                 arrayOf(Manifest.permission.READ_MEDIA_AUDIO), 1
             )
         } else {
-            ladeAudioDateien();
+            ladeAudioDateien()
         }
 
-        // Öffnen des FileExplorers für Auswahl von Datei
+        // File Picker
         filePickerLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == RESULT_OK) {
                     val uri = result.data?.data
                     if (uri != null) {
-                        // Persistente Berechtigung sichern
                         contentResolver.takePersistableUriPermission(
                             uri,
                             Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -114,13 +149,7 @@ class MainActivity : AppCompatActivity() {
 
         // Pause/Play Button
         binding.btnPause.setOnClickListener {
-            if (mediaPlayer.isPlaying) {
-                mediaPlayer.pause()
-                binding.btnPause.setIconResource(R.drawable.play_arrow_24px)
-            } else {
-                mediaPlayer.start()
-                binding.btnPause.setIconResource(R.drawable.pause_24px)
-            }
+            musicService?.togglePlayPause()
         }
 
         // Volume Button
@@ -133,36 +162,27 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        // Änderung der Sortierreihenfolge
+        // Sort Order Button
         binding.btnChangeSortOrder.setOnClickListener {
-            order = !order;
-            if (order == false) {
-                binding.btnChangeSortOrder.icon = getDrawable(R.drawable.keyboard_arrow_down_24px);
-            } else {
-                binding.btnChangeSortOrder.icon = getDrawable(R.drawable.keyboard_arrow_up_24px);
-            }
-            loadAdapter();
+            order = !order
+            binding.btnChangeSortOrder.icon = getDrawable(
+                if (order) R.drawable.keyboard_arrow_up_24px
+                else R.drawable.keyboard_arrow_down_24px
+            )
+            loadAdapter()
         }
 
         // Previous Button
         binding.btnPrevious.setOnClickListener {
-            if (currentTrackIndex > 0) {
-                playTrack(songList[currentTrackIndex - 1])
-            } else {
-                playTrack(songList[songList.size - 1]);
-            }
+            musicService?.previous()
         }
 
         // Next Button
         binding.btnNext.setOnClickListener {
-            if (currentTrackIndex < songList.size - 1) {
-                playTrack(songList[currentTrackIndex + 1])
-            } else {
-                playTrack(songList[0]);
-            }
+            musicService?.next()
         }
 
-        // Sortierbuttons in der RadioGroup
+        // Sort Toggle
         binding.toggleSortOptions.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 currentSortOption = when (checkedId) {
@@ -176,15 +196,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Floating action button für das Hinzufügen neuer Elemente
+        // FAB
         binding.fabAddPlaylist.setOnClickListener {
             val bottomSheet = BottomSheetDialog(this)
-            bottomSheet.behavior.isFitToContents = true;
-            bottomSheet.behavior.skipCollapsed = true;
+            bottomSheet.behavior.isFitToContents = true
+            bottomSheet.behavior.skipCollapsed = true
             val view = layoutInflater.inflate(R.layout.bottomsheetadd, null)
 
-            val toggleAddOptions =
-                view.findViewById<MaterialButtonToggleGroup>(R.id.toggleAddOptions)
+            val toggleAddOptions = view.findViewById<MaterialButtonToggleGroup>(R.id.toggleAddOptions)
             val layoutNewPlaylist = view.findViewById<LinearLayout>(R.id.layoutNewPlaylist)
             val layoutNewAudio = view.findViewById<LinearLayout>(R.id.layoutNewAudio)
             val etPlaylistName = view.findViewById<TextInputEditText>(R.id.etPlaylistName)
@@ -197,7 +216,6 @@ class MainActivity : AppCompatActivity() {
             val btnSavePlaylist = view.findViewById<MaterialButton>(R.id.btnSavePlaylist)
             val btnSaveAudio = view.findViewById<MaterialButton>(R.id.btnSaveAudio)
 
-            // Toggle zwischen Playlist und Audio
             toggleAddOptions.addOnButtonCheckedListener { _, checkedId, isChecked ->
                 if (isChecked) {
                     when (checkedId) {
@@ -205,7 +223,6 @@ class MainActivity : AppCompatActivity() {
                             layoutNewPlaylist.visibility = View.VISIBLE
                             layoutNewAudio.visibility = View.GONE
                         }
-
                         R.id.btnAddAudio -> {
                             layoutNewPlaylist.visibility = View.GONE
                             layoutNewAudio.visibility = View.VISIBLE
@@ -214,7 +231,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            // File Explorer öffnen
             btnBrowse.setOnClickListener {
                 currentPathField = etAudioPath
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
@@ -228,7 +244,6 @@ class MainActivity : AppCompatActivity() {
                 filePickerLauncher.launch(intent)
             }
 
-            // Playlist speichern
             btnSavePlaylist.setOnClickListener {
                 val name = etPlaylistName.text.toString()
                 if (name.isNotEmpty()) {
@@ -242,7 +257,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             view.findViewById<TextInputLayout>(R.id.tilAudioDate).setEndIconOnClickListener {
-                val calendar = java.util.Calendar.getInstance()
+                val calendar = Calendar.getInstance()
                 DatePickerDialog(
                     this,
                     { _, year, month, day ->
@@ -255,7 +270,6 @@ class MainActivity : AppCompatActivity() {
                 ).show()
             }
 
-            // Audio speichern
             btnSaveAudio.setOnClickListener {
                 val title = etAudioTitle.text.toString()
                 val artist = etAudioArtist.text.toString()
@@ -271,7 +285,7 @@ class MainActivity : AppCompatActivity() {
                     audio.audioGenre = genre
                     audio.audioRelDate = date
                     audio.audioPath = path
-                    myDB.addAudioToDatabase(audio);
+                    myDB.addAudioToDatabase(audio)
                     myDB.addAudioToPlaylist(audio.audioID, 1)
                     ladeAudioDateien()
                     bottomSheet.dismiss()
@@ -282,19 +296,14 @@ class MainActivity : AppCompatActivity() {
             bottomSheet.show()
         }
 
-        // Button für Detailsicht
+        // Card für Detailansicht
         binding.cardOpenDetail.setOnClickListener {
-            if (currentTrackIndex >= 0 && currentTrackIndex < songList.size) {
-                val intent = Intent(this, DetailActivity::class.java)
-                intent.putExtra("trackList", ArrayList(songList))
-                intent.putExtra("currentIndex", currentTrackIndex)
-                startActivity(intent)
-            }
+            val intent = Intent(this, DetailActivity::class.java)
+            startActivity(intent)
         }
-
     }
 
-    //Methode um die Berechtigungen zu überprüfen
+    //Methode zum fragen nach der Berechtigung
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
@@ -308,50 +317,64 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    //Methode, für wenn die MainActivity wieder im Vordergrund ist
+    //Wird aufgerufen, wenn die Activity im Fokus ist
     override fun onResume() {
-        super.onResume()
+        super.onResume();
         if (songList.isEmpty()) {
             ladeAudioDateien();
         }
+
+        musicService?.let { service ->
+            service.onTrackChanged = { track ->
+                binding.tvTitleText.text = track.audioTitle;
+                binding.tvSubTitleText.text = track.audioArtist;
+                binding.sbProgress.max = service.mediaPlayer.duration;
+                binding.sbProgress.progress = 0;
+                handler.removeCallbacks(updateSeekBar);
+                handler.post(updateSeekBar);
+            }
+
+            service.onPlayStateChanged = { isPlaying ->
+                if (isPlaying) {
+                    binding.btnPause.setIconResource(R.drawable.pause_24px);
+                } else {
+                    binding.btnPause.setIconResource(R.drawable.play_arrow_24px);
+                }
+            }
+
+            service.currentTrack?.let { track ->
+                binding.tvTitleText.text = track.audioTitle
+                binding.tvSubTitleText.text = track.audioArtist
+                binding.sbProgress.max = service.mediaPlayer.duration
+                binding.sbProgress.progress = service.mediaPlayer.currentPosition
+                binding.btnPause.setIconResource(
+                    if (service.mediaPlayer.isPlaying) R.drawable.pause_24px else R.drawable.play_arrow_24px
+                )
+                handler.post(updateSeekBar)
+            }
+        }
     }
 
-    //Methode, um den MediaPlayer freizugeben wenn die Activity geschlossen wird
+    //Wird aufgerufen, wenn die Activity geschlossen wird
     override fun onDestroy() {
         super.onDestroy();
         handler.removeCallbacks(updateSeekBar);
-        mediaPlayer.release();
-    }
-
-    //Methode, um eine Audiodatei abzuspielen
-    fun playTrack(track: myAudio) {
-        if (mediaPlayer.isPlaying && currentUri == track.audioPath) {
-            return
+        if (serviceBound) {
+            unbindService(serviceConnection);
+            serviceBound = false;
         }
-        currentTrackIndex = songList.indexOf(track)
-        mediaPlayer.reset()
-        currentUri = track.audioPath
-        mediaPlayer.setAudioAttributes(
-            AudioAttributes.Builder()
-                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                .setUsage(AudioAttributes.USAGE_MEDIA)
-                .build()
-        )
-        mediaPlayer.setDataSource(this, Uri.parse(track.audioPath))
-        mediaPlayer.prepare()
-        mediaPlayer.start()
-
-        // SeekBar auf neuen Track setzen
-        binding.sbProgress.max = mediaPlayer.duration
-        binding.sbProgress.progress = 0
-        handler.removeCallbacks(updateSeekBar)
-        handler.post(updateSeekBar)
-
-        binding.tvTitleText.text = track.audioTitle
-        binding.tvSubTitleText.text = track.audioArtist
     }
 
-    //Methode, um den Adapter zu laden und zuzuweisen
+    //Methode zum Abspielen einer Audiodatei
+    fun playTrack(track: myAudio) {
+        musicService?.let {
+            it.trackList = songList;
+            val index = songList.indexOf(track);
+            it.playTrack(track, index);
+        }
+    }
+
+    //Methode zum Laden aller Adapter
     fun loadAdapter() {
         when (currentSortOption) {
             SortOption.NAME -> if (order) songList.sortByDescending { it.audioTitle } else songList.sortBy { it.audioTitle }
@@ -384,7 +407,7 @@ class MainActivity : AppCompatActivity() {
             songList, this, currentPlaylistID,
             onTrackClicked = { track -> playTrack(track) },
             onTrackRemovedFromPlaylist = { track ->
-                myDB.removeAudioFromPlaylist(track.audioID, currentPlaylistID);
+                myDB.deleteAudioEntry(track)
                 ladeAudioDateien()
             },
             onTrackEdited = { track ->
@@ -400,12 +423,10 @@ class MainActivity : AppCompatActivity() {
                     .toMutableList()
 
                 val selectionAdapter = MyAdapterPlaylistSelect(playlists)
-
-                // Bereits vorhandene Verknüpfungen vorauswählen
                 val existingPlaylists = myDB.getPlaylistIDsForAudio(track.audioID)
                 selectionAdapter.selectedPlaylists.addAll(existingPlaylists)
 
-                view.findViewById<RecyclerView>(R.id.rvPlaylistSelection).apply {
+                view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvPlaylistSelection).apply {
                     layoutManager = LinearLayoutManager(this@MainActivity)
                     adapter = selectionAdapter
                 }
@@ -430,20 +451,20 @@ class MainActivity : AppCompatActivity() {
             },
             onRemoveFromPlaylist = { track ->
                 myDB.removeAudioFromPlaylist(track.audioID, currentPlaylistID)
-                ladeAudioDateien();
+                ladeAudioDateien()
             }
         )
         binding.rvAudioTracks.adapter = adapter
     }
 
-    //Methode, um die Audiodateien zu laden
+    //Methode zum Laden aller Audiodateien und verbinden von recyclerView mit den Listen von Audios und Playlists
     fun ladeAudioDateien() {
         val mediaList = myDB.getAllMp3Files(this) as MutableList<myAudio>
         myDB.removeDeletedAudios(mediaList.map { it.audioID })
         for (audio in mediaList) {
             if (!myDB.audioExists(audio.audioID)) {
-                myDB.addAudioToDatabase(audio);
-                myDB.addAudioToPlaylist(audio.audioID, 1);
+                myDB.addAudioToDatabase(audio)
+                myDB.addAudioToPlaylist(audio.audioID, 1)
             }
         }
 

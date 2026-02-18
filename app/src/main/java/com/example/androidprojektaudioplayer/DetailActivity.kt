@@ -1,12 +1,13 @@
 package com.example.androidprojektaudioplayer
 
+import android.content.ComponentName
 import android.content.Context
-import android.media.AudioAttributes
+import android.content.Intent
+import android.content.ServiceConnection
 import android.media.AudioManager
-import android.media.MediaPlayer
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.os.IBinder
 import android.os.Looper
 import android.widget.SeekBar
 import androidx.activity.enableEdgeToEdge
@@ -17,16 +18,64 @@ import com.example.androidprojektaudioplayer.databinding.DetailsBinding
 
 class DetailActivity : AppCompatActivity() {
     private lateinit var binding: DetailsBinding
-    private var mediaPlayer: MediaPlayer = MediaPlayer()
+    private var musicService: MusicService? = null
+    private var serviceBound = false
     private val handler = Handler(Looper.getMainLooper())
-    private lateinit var trackList: ArrayList<myAudio>
-    private var currentIndex: Int = 0
 
+    //Verbindung zum Service, der die Musik abspielt
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as MusicService.MusicBinder
+            musicService = binder.getService()
+            serviceBound = true
+
+            // UI initial befüllen
+            musicService?.currentTrack?.let { track ->
+                binding.tvDetailTitle.text = track.audioTitle
+                binding.tvDetailArtist.text = track.audioArtist
+                binding.sbDetailProgress.max = musicService?.mediaPlayer?.duration ?: 0
+                binding.tvTotalTime.text = formatTime(musicService?.mediaPlayer?.duration ?: 0)
+                binding.btnDetailPause.setIconResource(
+                    if (musicService?.mediaPlayer?.isPlaying == true) R.drawable.pause_24px
+                    else R.drawable.play_arrow_24px
+                )
+                handler.post(updateSeekBar)
+            }
+
+            // Callbacks
+            musicService?.onTrackChanged = { track ->
+                binding.tvDetailTitle.text = track.audioTitle
+                binding.tvDetailArtist.text = track.audioArtist
+                binding.sbDetailProgress.max = musicService?.mediaPlayer?.duration ?: 0
+                binding.tvTotalTime.text = formatTime(musicService?.mediaPlayer?.duration ?: 0)
+                binding.tvCurrentTime.text = "0:00"
+                handler.removeCallbacks(updateSeekBar)
+                handler.post(updateSeekBar)
+            }
+
+            // Änderung des Symbols für Play/Pause
+            musicService?.onPlayStateChanged = { isPlaying ->
+                if (isPlaying) {
+                    binding.btnDetailPause.setIconResource(R.drawable.pause_24px);
+                } else {
+                    binding.btnDetailPause.setIconResource(R.drawable.play_arrow_24px);
+                }
+            }
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            serviceBound = false
+        }
+    }
+
+    //Seekbar für den Verlauf des Songs
     private val updateSeekBar = object : Runnable {
         override fun run() {
-            if (mediaPlayer.isPlaying) {
-                binding.sbDetailProgress.progress = mediaPlayer.currentPosition
-                binding.tvCurrentTime.text = formatTime(mediaPlayer.currentPosition)
+            musicService?.let {
+                if (it.mediaPlayer.isPlaying) {
+                    binding.sbDetailProgress.progress = it.mediaPlayer.currentPosition
+                    binding.tvCurrentTime.text = formatTime(it.mediaPlayer.currentPosition)
+                }
             }
             handler.postDelayed(this, 1000)
         }
@@ -43,45 +92,24 @@ class DetailActivity : AppCompatActivity() {
             insets
         }
 
-        // Daten vom Intent holen
-        @Suppress("DEPRECATION")
-        trackList = intent.getSerializableExtra("trackList") as? ArrayList<myAudio> ?: arrayListOf()
-        currentIndex = intent.getIntExtra("currentIndex", 0)
-
-        // Aktuellen Track abspielen
-        if (trackList.isNotEmpty()) {
-            playTrack(trackList[currentIndex])
+        // Service binden (nicht neu starten - läuft schon)
+        Intent(this, MusicService::class.java).also { intent ->
+            bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
         }
 
         // Previous Button
         binding.btnDetailPrevious.setOnClickListener {
-            if (currentIndex > 0) {
-                currentIndex--
-            } else {
-                currentIndex = trackList.size - 1
-            }
-            playTrack(trackList[currentIndex])
+            musicService?.previous()
         }
 
         // Next Button
         binding.btnDetailNext.setOnClickListener {
-            if (currentIndex < trackList.size - 1) {
-                currentIndex++
-            } else {
-                currentIndex = 0
-            }
-            playTrack(trackList[currentIndex])
+            musicService?.next()
         }
 
         // Pause/Play
         binding.btnDetailPause.setOnClickListener {
-            if (mediaPlayer.isPlaying) {
-                mediaPlayer.pause()
-                binding.btnDetailPause.setIconResource(R.drawable.play_arrow_24px)
-            } else {
-                mediaPlayer.start()
-                binding.btnDetailPause.setIconResource(R.drawable.pause_24px)
-            }
+            musicService?.togglePlayPause()
         }
 
         // Volume Button
@@ -94,49 +122,35 @@ class DetailActivity : AppCompatActivity() {
             )
         }
 
-        // SeekBar Listener
+        // Zurück Button
+        binding.btnBack.setOnClickListener {
+            finish();
+        }
+
+        // SeekBar
         binding.sbDetailProgress.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    mediaPlayer.seekTo(progress)
+                    musicService?.mediaPlayer?.seekTo(progress)
                     binding.tvCurrentTime.text = formatTime(progress)
                 }
             }
-
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
     }
 
-    private fun playTrack(track: myAudio) {
-        mediaPlayer.reset()
-        mediaPlayer.setAudioAttributes(
-            AudioAttributes.Builder()
-                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                .setUsage(AudioAttributes.USAGE_MEDIA)
-                .build()
-        )
-        mediaPlayer.setDataSource(this, Uri.parse(track.audioPath))
-        mediaPlayer.prepare()
-        mediaPlayer.start()
-
-        // UI aktualisieren
-        binding.tvDetailTitle.text = track.audioTitle
-        binding.tvDetailArtist.text = track.audioArtist
-        binding.sbDetailProgress.max = mediaPlayer.duration
-        binding.tvTotalTime.text = formatTime(mediaPlayer.duration)
-        binding.tvCurrentTime.text = "0:00"
-
-        handler.removeCallbacks(updateSeekBar)
-        handler.post(updateSeekBar)
-    }
-
+    //Wird aufgerufen, wenn die Activity geschlossen wird
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacks(updateSeekBar)
-        mediaPlayer.release()
+        if (serviceBound) {
+            unbindService(serviceConnection)
+            serviceBound = false
+        }
     }
 
+    //Methode zur Formatierung der Zeit in Minuten und Sekunden zur Anzeige
     private fun formatTime(ms: Int): String {
         val seconds = (ms / 1000) % 60
         val minutes = (ms / 1000) / 60
