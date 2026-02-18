@@ -112,7 +112,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Suchleiste Listener
-        binding.svSearch.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
+        binding.svSearch.setOnQueryTextListener(object :
+            androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
@@ -130,6 +131,7 @@ class MainActivity : AppCompatActivity() {
                     musicService?.mediaPlayer?.seekTo(progress)
                 }
             }
+
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
@@ -216,7 +218,8 @@ class MainActivity : AppCompatActivity() {
             bottomSheet.behavior.skipCollapsed = true
             val view = layoutInflater.inflate(R.layout.bottomsheetadd, null)
 
-            val toggleAddOptions = view.findViewById<MaterialButtonToggleGroup>(R.id.toggleAddOptions)
+            val toggleAddOptions =
+                view.findViewById<MaterialButtonToggleGroup>(R.id.toggleAddOptions)
             val layoutNewPlaylist = view.findViewById<LinearLayout>(R.id.layoutNewPlaylist)
             val layoutNewAudio = view.findViewById<LinearLayout>(R.id.layoutNewAudio)
             val etPlaylistName = view.findViewById<TextInputEditText>(R.id.etPlaylistName)
@@ -236,6 +239,7 @@ class MainActivity : AppCompatActivity() {
                             layoutNewPlaylist.visibility = View.VISIBLE
                             layoutNewAudio.visibility = View.GONE
                         }
+
                         R.id.btnAddAudio -> {
                             layoutNewPlaylist.visibility = View.GONE
                             layoutNewAudio.visibility = View.VISIBLE
@@ -363,14 +367,12 @@ class MainActivity : AppCompatActivity() {
                     binding.tvTitleText.text = track.audioTitle
                     binding.tvSubTitleText.text = track.audioArtist
 
-                    // WICHTIG: Nur wenn MediaPlayer bereit ist
                     try {
                         if (service.mediaPlayer.duration > 0) {
                             binding.sbProgress.max = service.mediaPlayer.duration
                             binding.sbProgress.progress = service.mediaPlayer.currentPosition
                         }
                     } catch (e: Exception) {
-                        // MediaPlayer noch nicht bereit
                     }
 
                     binding.btnPause.setIconResource(
@@ -380,12 +382,10 @@ class MainActivity : AppCompatActivity() {
                     handler.post(updateSeekBar)
                 }
             } else {
-                // Kein Track im Service - aus SharedPreferences wiederherstellen
                 val prefs = getSharedPreferences("MusicPlayerPrefs", MODE_PRIVATE)
                 val trackID = prefs.getInt("currentTrackID", -1)
                 val position = prefs.getInt("currentPosition", 0)
                 val wasPlaying = prefs.getBoolean("wasPlaying", false)
-
                 if (trackID == -1 || songList.isEmpty()) return
 
                 val track = songList.find { it.audioID == trackID } ?: return
@@ -395,13 +395,11 @@ class MainActivity : AppCompatActivity() {
                 service.trackList = songList
                 service.playTrack(track, index)
 
-                // WICHTIG: Position NACH playTrack setzen mit Delay
                 handler.postDelayed({
                     try {
                         service.mediaPlayer.seekTo(position)
                         if (!wasPlaying) service.pause()
                     } catch (e: Exception) {
-                        // Ignorieren
                     }
                 }, 500)
             }
@@ -486,10 +484,11 @@ class MainActivity : AppCompatActivity() {
                 val existingPlaylists = myDB.getPlaylistIDsForAudio(track.audioID)
                 selectionAdapter.selectedPlaylists.addAll(existingPlaylists)
 
-                view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvPlaylistSelection).apply {
-                    layoutManager = LinearLayoutManager(this@MainActivity)
-                    adapter = selectionAdapter
-                }
+                view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvPlaylistSelection)
+                    .apply {
+                        layoutManager = LinearLayoutManager(this@MainActivity)
+                        adapter = selectionAdapter
+                    }
 
                 view.findViewById<MaterialButton>(R.id.btnConfirmAddToPlaylist).setOnClickListener {
                     for (playlistID in selectionAdapter.selectedPlaylists) {
