@@ -7,14 +7,12 @@
     android:padding="15dp"
     android:id="@+id/main">
 
-    <!-- Oberer Bereich -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:orientation="horizontal">
 
-        <!-- Linke kleine RecyclerView -->
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -37,34 +35,29 @@
 
         </FrameLayout>
 
-        <!-- Orange Abstandhalter -->
         <View
             android:layout_width="8dp"
             android:layout_height="match_parent" />
 
-        <!-- Rechter Hauptbereich -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="4"
             android:orientation="vertical">
 
-            <!-- Kopfzeile (Grün + Blau) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <!-- Grüne TextView -->
-                <EditText
+                <androidx.appcompat.widget.SearchView
+                    android:id="@+id/svSearch"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:hint="SUCHE HIER"
-                    android:padding="8dp"
-                    android:id="@+id/etSearch" />
+                    android:queryHint="@string/sucheHint"
+                    android:iconifiedByDefault="false"/>
 
-                <!-- Blauer Button -->
                 <com.google.android.material.button.MaterialButton
                     android:layout_width="wrap_content"
                     android:layout_height="45sp"
@@ -74,7 +67,6 @@
                     android:id="@+id/btnChangeSortOrder"/>
             </LinearLayout>
 
-            <!-- Hellrotes LinearLayout -->
             <com.google.android.material.button.MaterialButtonToggleGroup
                 android:id="@+id/toggleSortOptions"
                 android:layout_width="match_parent"
@@ -120,7 +112,6 @@
 
             </com.google.android.material.button.MaterialButtonToggleGroup>
 
-            <!-- Große RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvAudioTracks"
                 android:layout_width="match_parent"
@@ -130,14 +121,12 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Unterer roter Bereich -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.3"
         android:orientation="vertical">
 
-        <!-- Große klickbare Fläche für Detailansicht -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardOpenDetail"
             android:layout_width="80dp"
@@ -158,7 +147,6 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Titel -->
         <TextView
             android:id="@+id/tvTitleText"
             android:layout_width="0dp"
@@ -174,7 +162,6 @@
             app:layout_constraintStart_toEndOf="@id/cardOpenDetail"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- Untertitel -->
         <TextView
             android:id="@+id/tvSubTitleText"
             android:layout_width="0dp"
@@ -191,7 +178,6 @@
             app:layout_constraintStart_toEndOf="@id/cardOpenDetail"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- Mittlere Buttons -->
         <LinearLayout
             android:id="@+id/buttonContainer"
             android:layout_width="wrap_content"
@@ -228,7 +214,6 @@
                 style="@style/Widget.Material3.Button.IconButton"/>
         </LinearLayout>
 
-        <!-- Lautsprecher-Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnVolume"
             android:layout_width="wrap_content"
@@ -240,7 +225,6 @@
             app:iconSize="30dp"
             style="@style/Widget.Material3.Button.IconButton"/>
 
-        <!-- SeekBar -->
         <SeekBar
             android:id="@+id/sbProgress"
             android:layout_width="0dp"

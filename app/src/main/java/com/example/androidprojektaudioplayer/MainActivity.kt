@@ -110,6 +110,18 @@ class MainActivity : AppCompatActivity() {
             bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
         }
 
+        // Suchleiste Listener
+        binding.svSearch.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                filterSongs(newText ?: "")
+                return true
+            }
+        })
+
         // SeekBar Listener
         binding.sbProgress.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -363,6 +375,23 @@ class MainActivity : AppCompatActivity() {
             unbindService(serviceConnection);
             serviceBound = false;
         }
+    }
+
+    //Methode zur Suche nach einem Song mit dem Inhalt aus der Suche
+    private fun filterSongs(query: String) {
+        val allSongs = myDB.getAudiosByPlaylist(currentPlaylistID) as MutableList<myAudio>
+
+        songList = if (query.isEmpty()) {
+            allSongs
+        } else {
+            allSongs.filter { audio ->
+                audio.audioTitle.contains(query, ignoreCase = true) ||
+                        audio.audioArtist.contains(query, ignoreCase = true) ||
+                        audio.audioGenre.contains(query, ignoreCase = true)
+            }.toMutableList()
+        }
+
+        loadAdapter()
     }
 
     //Methode zum Abspielen einer Audiodatei

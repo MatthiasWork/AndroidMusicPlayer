@@ -13,6 +13,7 @@
     <string name="playlistNameHint">Neuer Name</string>
     <string name="playlistDescHint">Playlist umbennen</string>
     <string name="playlistMainHint">Playlist Name</string>
+    <string name="sucheHint">Hier suchen...</string>
 
     <string name="playlist">Playlist</string>
     <string name="audio">Audiodatei</string>
