@@ -33,8 +33,13 @@ class DetailActivity : AppCompatActivity() {
             musicService?.currentTrack?.let { track ->
                 binding.tvDetailTitle.text = track.audioTitle
                 binding.tvDetailArtist.text = track.audioArtist
-                binding.sbDetailProgress.max = musicService?.mediaPlayer?.duration ?: 0
-                binding.tvTotalTime.text = formatTime(musicService?.mediaPlayer?.duration ?: 0)
+                val duration = musicService?.mediaPlayer?.duration ?: 0
+                val current = musicService?.mediaPlayer?.currentPosition ?: 0
+                binding.tvTimeCombined.text =
+                    "${formatTime(current)} / ${formatTime(duration)}"
+                binding.sbDetailProgress.max = duration;
+                binding.sbDetailProgress.progress = current;
+                //binding.tvTotalTime.text = formatTime(musicService?.mediaPlayer?.duration ?: 0)
                 binding.btnDetailPause.setIconResource(
                     if (musicService?.mediaPlayer?.isPlaying == true) R.drawable.pause_24px
                     else R.drawable.play_arrow_24px
@@ -46,9 +51,9 @@ class DetailActivity : AppCompatActivity() {
             musicService?.onTrackChanged = { track ->
                 binding.tvDetailTitle.text = track.audioTitle
                 binding.tvDetailArtist.text = track.audioArtist
-                binding.sbDetailProgress.max = musicService?.mediaPlayer?.duration ?: 0
-                binding.tvTotalTime.text = formatTime(musicService?.mediaPlayer?.duration ?: 0)
-                binding.tvCurrentTime.text = "0:00"
+                val duration = musicService?.mediaPlayer?.duration ?: 0
+                binding.sbDetailProgress.max = duration
+                binding.tvTimeCombined.text = "0:00 / ${formatTime(duration)}"
                 handler.removeCallbacks(updateSeekBar)
                 handler.post(updateSeekBar)
             }
@@ -73,8 +78,10 @@ class DetailActivity : AppCompatActivity() {
         override fun run() {
             musicService?.let {
                 if (it.mediaPlayer.isPlaying) {
-                    binding.sbDetailProgress.progress = it.mediaPlayer.currentPosition
-                    binding.tvCurrentTime.text = formatTime(it.mediaPlayer.currentPosition)
+                    val current = it.mediaPlayer.currentPosition
+                    val duration = it.mediaPlayer.duration
+                    binding.sbDetailProgress.progress = current
+                    binding.tvTimeCombined.text = "${formatTime(current)} / ${formatTime(duration)}"
                 }
             }
             handler.postDelayed(this, 1000)
@@ -132,7 +139,7 @@ class DetailActivity : AppCompatActivity() {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
                     musicService?.mediaPlayer?.seekTo(progress)
-                    binding.tvCurrentTime.text = formatTime(progress)
+                    //binding.tvCurrentTime.text = formatTime(progress)
                 }
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}

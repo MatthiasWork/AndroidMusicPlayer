@@ -2,12 +2,13 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/detailsMain"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
-    android:padding="24dp"
-    android:id="@+id/detailsMain">
+    android:padding="24dp">
 
+    <!-- Back Button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnBack"
         android:layout_width="wrap_content"
@@ -53,7 +54,7 @@
         app:cardCornerRadius="8dp"
         app:cardElevation="2dp"
         app:layout_constraintTop_toBottomOf="@id/cardTitle"
-        app:layout_constraintBottom_toTopOf="@id/llDetailButtons"
+        app:layout_constraintBottom_toTopOf="@id/llDetailPlayback"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -69,17 +70,15 @@
             android:padding="8dp"/>
     </androidx.cardview.widget.CardView>
 
-    <!-- Buttons -->
-    <!-- Buttons: Previous, Pause, Next, Volume -->
+    <!-- Playback Buttons (zentriert) -->
     <LinearLayout
-        android:id="@+id/llDetailButtons"
-        android:layout_width="0dp"
+        android:id="@+id/llDetailPlayback"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
         android:layout_marginTop="32dp"
         app:layout_constraintTop_toBottomOf="@id/cardArtist"
-        app:layout_constraintBottom_toTopOf="@id/tvCurrentTime"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -108,38 +107,32 @@
             app:iconSize="36dp"
             style="@style/Widget.Material3.Button.IconButton"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnDetailVolume"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/brand_awareness_24px"
-            app:iconSize="36dp"
-            android:layout_marginStart="24dp"
-            style="@style/Widget.Material3.Button.IconButton"/>
-
     </LinearLayout>
 
-    <!-- Zeiten -->
-    <TextView
-        android:id="@+id/tvCurrentTime"
+    <!-- Volume Button (rechts ausgerichtet) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDetailVolume"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="0:00"
-        android:textSize="12sp"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        app:layout_constraintTop_toBottomOf="@id/llDetailButtons"
-        app:layout_constraintBottom_toTopOf="@id/sbDetailProgress"
+        app:icon="@drawable/brand_awareness_24px"
+        app:iconSize="36dp"
+        style="@style/Widget.Material3.Button.IconButton"
+        app:layout_constraintTop_toTopOf="@id/llDetailPlayback"
+        app:layout_constraintBottom_toBottomOf="@id/llDetailPlayback"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Zeit kombiniert -->
     <TextView
-        android:id="@+id/tvTotalTime"
+        android:id="@+id/tvTimeCombined"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="0:00"
+        android:text="0:00 / 0:00"
         android:textSize="12sp"
         android:textColor="?attr/colorOnSurfaceVariant"
-        app:layout_constraintTop_toTopOf="@id/tvCurrentTime"
-        app:layout_constraintStart_toStartOf="parent"/>
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/llDetailPlayback"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- SeekBar -->
     <SeekBar
@@ -147,7 +140,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/tvCurrentTime"
+        app:layout_constraintTop_toBottomOf="@id/tvTimeCombined"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
