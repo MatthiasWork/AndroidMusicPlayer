@@ -373,11 +373,15 @@ class MainActivity : AppCompatActivity() {
                             binding.sbProgress.progress = service.mediaPlayer.currentPosition
                         }
                     } catch (e: Exception) {
+
                     }
 
                     binding.btnPause.setIconResource(
-                        if (service.mediaPlayer.isPlaying) R.drawable.pause_24px
-                        else R.drawable.play_arrow_24px
+                        if (service.mediaPlayer.isPlaying) {
+                            R.drawable.pause_24px
+                        } else {
+                            R.drawable.play_arrow_24px
+                        }
                     )
                     handler.post(updateSeekBar)
                 }
