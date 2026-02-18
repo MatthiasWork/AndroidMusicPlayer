@@ -1,0 +1,81 @@
+@startuml
+class MainActivity {
+  - DataBaseHelper myDB
+  - MusicService musicService
+  - List<myAudio> songList
+  + onCreate()
+  + playTrack(myAudio)
+  + loadAdapter()
+}
+
+class DetailActivity {
+  - MusicService musicService
+  + onCreate()
+  + formatTime(Int)
+}
+
+class MusicService {
+  + MediaPlayer mediaPlayer
+  + myAudio currentTrack
+  + List<myAudio> trackList
+  + playTrack(myAudio, Int)
+  + pause()
+  + next()
+  + previous()
+}
+
+class DataBaseHelper {
+  + getAllAudiosFromDB()
+  + getAudiosByPlaylist(Int)
+  + getAllPlaylistsFromDB()
+  + addAudioToPlaylist(Int, Int)
+}
+
+class myAudio {
+  + Int audioID
+  + String audioTitle
+  + String audioArtist
+  + String audioPath
+}
+
+class myPlaylist {
+  + Int playlistID
+  + String playlistTitle
+}
+
+class myAudioPlaylist {
+  + Int audioPlaylistFKPK
+  + Int playlistAudioFKPK
+}
+
+class MyAdapterAudio {
+  - List<myAudio> audioList
+  + onBindViewHolder()
+}
+
+class MyAdapterPlaylist {
+  - List<myPlaylist> playlistList
+  + onBindViewHolder()
+}
+
+class MyAdapterPlaylistSelect {
+  - List<myPlaylist> playlistList
+  + selectedPlaylists
+}
+
+MainActivity --> MusicService
+MainActivity --> DataBaseHelper
+MainActivity --> myAudio
+MainActivity --> MyAdapterAudio
+MainActivity --> MyAdapterPlaylist
+DetailActivity --> MusicService
+MusicService --> myAudio
+DataBaseHelper --> myAudio
+DataBaseHelper --> myPlaylist
+DataBaseHelper --> myAudioPlaylist
+MyAdapterAudio --> myAudio
+MyAdapterPlaylist --> myPlaylist
+MyAdapterPlaylistSelect --> myPlaylist
+myAudioPlaylist --> myAudio
+myAudioPlaylist --> myPlaylist
+@enduml
