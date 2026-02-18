@@ -386,9 +386,10 @@ class MainActivity : AppCompatActivity() {
                     handler.post(updateSeekBar)
                 }
             } else {
-                val prefs = getSharedPreferences("MusicPlayerPrefs", MODE_PRIVATE)
+                val prefs = applicationContext.getSharedPreferences("MusicPlayerPrefs", MODE_PRIVATE)
                 val trackID = prefs.getInt("currentTrackID", -1)
                 val position = prefs.getInt("currentPosition", 0)
+                android.util.Log.d("MainActivity", "LOADED: TrackID=$trackID, Position=$position, SongListSize=${songList.size}")
                 val wasPlaying = prefs.getBoolean("wasPlaying", false)
                 if (trackID == -1 || songList.isEmpty()) return
 

@@ -207,14 +207,22 @@ class MusicService : Service() {
     }
 
     private fun savePlaybackState() {
-        val prefs = getSharedPreferences("MusicPlayerPrefs", Context.MODE_PRIVATE)
+        if (currentTrack == null) {
+            android.util.Log.d("MusicService", "No track to save, skipping")
+            return  // Nichts speichern wenn kein Track läuft
+        }
+        val prefs = applicationContext.getSharedPreferences("MusicPlayerPrefs", Context.MODE_PRIVATE)
         prefs.edit().apply {
             putInt("currentTrackID", currentTrack?.audioID ?: -1)
             putInt("currentPosition", mediaPlayer.currentPosition)
             putInt("currentIndex", currentIndex)
             putBoolean("wasPlaying", mediaPlayer.isPlaying)
-            apply()
+            commit()
         }
+        android.util.Log.d("MusicService", "SAVED: TrackID=${currentTrack?.audioID}, Position=${mediaPlayer.currentPosition}");
+        val verify = prefs.getInt("currentTrackID", -1)
+        android.util.Log.d("MusicService", "VERIFIED: Read back trackID=$verify")
+
     }
 
     override fun onDestroy() {
