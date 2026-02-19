@@ -1,0 +1,122 @@
+@startuml
+class myAudio {
++ Int audioID
++ String audioTitle
++ String audioArtist
++ String audioGenre
++ String audioPath
++ String audioRelDate
++ String toString()
+}
+
+class MyAdapterFolder {
+- MutableList<String> folderList
++ Set<String> selectedFolders
++ onCreateViewHolder(ViewGroup, Int): MyViewHolder
++ onBindViewHolder(MyViewHolder, Int)
++ getItemCount(): Int
+}
+
+class MyAdapterAudio {
+- MutableList<myAudio> audioList
+- Int currentPlaylistID
++ onCreateViewHolder(ViewGroup, Int): MyViewHolder
++ onBindViewHolder(MyViewHolder, Int)
++ getItemCount(): Int
+}
+
+class MyAdapterPlaylist {
+- MutableList<myPlaylist> playlistList
++ onCreateViewHolder(ViewGroup, Int): MyViewHolder
++ onBindViewHolder(MyViewHolder, Int)
++ getItemCount(): Int
+}
+
+class MyAdapterPlaylistSelect {
+- MutableList<myPlaylist> playlistList
++ Set<Int> selectedPlaylists
++ onCreateViewHolder(ViewGroup, Int): MyViewHolder
++ onBindViewHolder(MyViewHolder, Int)
++ getItemCount(): Int
+}
+
+enum MainActivity$SortOption {
++  NAME
++  ARTIST
++  GENRE
++  RELEASE
+}
+
+class MainActivity {
+- DataBaseHelper myDB
+- MusicService? musicService
+- MutableList<myAudio> songList
+- Int currentPlaylistID
++ onCreate(Bundle)
++ onResume()
++ onDestroy()
++ playTrack(myAudio)
++ loadAdapter()
++ ladeAudioDateien()
+- filterSongs(String)
+- restorePlaybackState()
+}
+
+class DetailActivity {
+- MusicService? musicService
++ onCreate(Bundle)
++ onDestroy()
+- formatTime(Int): String
+}
+
+class myPlaylist {
++ Int playlistID
++ String playlistTitle
++ String toString()
+}
+
+class myAudioPlaylist {
++ Int audioPlaylistFKPK
++ Int playlistAudioFKPK
++ String toString()
+}
+
+class DataBaseHelper {
++ getAllMp3Files(Context): List<myAudio>
++ getAllAudioFolders(Context): List<String>
++ getAudiosByPlaylist(Int): List<myAudio>
++ getAllPlaylistsFromDB(): List<myPlaylist>
++ addAudioToDatabase(myAudio)
++ addPlaylistToDatabase(myPlaylist)
++ addAudioToPlaylist(Int, Int)
++ removeAudioFromPlaylist(Int, Int)
+}
+
+class MusicService {
++ MediaPlayer mediaPlayer
++ myAudio? currentTrack
++ MutableList<myAudio> trackList
++ onCreate()
++ playTrack(myAudio, Int)
++ pause()
++ resume()
++ togglePlayPause()
++ next()
++ previous()
+- savePlaybackState()
+}
+
+MainActivity --> MusicService
+MainActivity --> DataBaseHelper
+MainActivity --> MyAdapterAudio
+MainActivity --> MyAdapterPlaylist
+MainActivity --> MyAdapterFolder
+DetailActivity --> MusicService
+MusicService --> myAudio
+DataBaseHelper --> myAudio
+DataBaseHelper --> myPlaylist
+DataBaseHelper --> myAudioPlaylist
+MyAdapterAudio --> myAudio
+MyAdapterPlaylist --> myPlaylist
+MyAdapterPlaylistSelect --> myPlaylist
+@enduml
