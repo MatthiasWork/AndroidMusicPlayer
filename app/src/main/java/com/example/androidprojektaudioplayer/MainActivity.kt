@@ -106,6 +106,8 @@ class MainActivity : AppCompatActivity() {
 
         myDB = DataBaseHelper(this)
 
+        android.util.Log.d("MainActivity", "Database cleared!")
+
         // Service starten und binden
         Intent(this, MusicService::class.java).also { intent ->
             startService(intent)

@@ -32,7 +32,7 @@ class MyAdapterAudio(
         holder.tvGenre.text = currentTrack.audioGenre
         holder.tvArtist.text = currentTrack.audioArtist
         holder.tvDate.text = currentTrack.audioRelDate
-
+        android.util.Log.d("Adapter", "Title: ${currentTrack.audioTitle}, Genre: ${currentTrack.audioGenre}")
         holder.itemView.setOnClickListener {
             onTrackClicked(currentTrack);
         }

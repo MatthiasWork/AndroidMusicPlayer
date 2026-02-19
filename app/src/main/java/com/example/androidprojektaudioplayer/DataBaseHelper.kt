@@ -17,7 +17,7 @@ private val DATABASE_VERSION: Int = 1;
 private val DATABASE_NAME: String = "Musicman";
 
 //region Tabelle - Audio
-private val TABLE_AUDIO: String = "Audiotitel";
+public val TABLE_AUDIO: String = "Audiotitel";
 private val AUDIO_ID: String = "AudioID";
 private val AUDIO_TITLE: String = "AudioTitle";
 private val AUDIO_ARTIST: String = "AudioArtist";
@@ -170,7 +170,15 @@ class DataBaseHelper(context: Context) :
                         id.toLong()
                     )
 
-                    mp3List += myAudio(id, name, artist, album, contentUri.toString(), release)
+                    val audio = myAudio()
+                    audio.audioID = id
+                    audio.audioTitle = name
+                    audio.audioArtist = artist
+                    audio.audioGenre = album  // Album als Genre
+                    audio.audioPath = contentUri.toString()
+                    audio.audioRelDate = release
+
+                    mp3List += audio
                 }
             }
         }
