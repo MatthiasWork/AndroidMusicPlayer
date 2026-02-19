@@ -10,6 +10,7 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
 import androidx.core.content.res.TypedArrayUtils.getString
+import java.io.File
 
 private val TAG: String = "SoundioMusikPlayer"
 private val DATABASE_VERSION: Int = 1;
@@ -65,6 +66,54 @@ class DataBaseHelper(context: Context) :
         }
     }
 
+
+
+    // Methode, um alle genutzten Ordner zu holen
+    fun getAllAudioFolders(context: Context): List<String> {
+        val folders = mutableSetOf<String>()
+
+        val projection = arrayOf(MediaStore.Audio.Media.DATA)
+        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+
+        val cursor = context.contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            projection,
+            selection,
+            null,
+            null
+        )
+
+        cursor?.use {
+            val dataColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+
+            while (it.moveToNext()) {
+                val filePath = it.getString(dataColumn)
+                val folder = File(filePath).parent
+
+                if (folder != null) {
+                    folders.add(folder)
+                }
+            }
+        }
+
+        return folders.sorted()  // Alphabetisch sortiert zurückgeben
+    }
+
+    //Methode zum Erneuern der db Version
+    //Nicht verwendet
+    override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+    }
+
+    //Methode, um ForeignKeys zu aktivieren
+    override fun onOpen(db: SQLiteDatabase?) {
+        super.onOpen(db)
+        if (db is SQLiteDatabase) {
+            db.setForeignKeyConstraintsEnabled(true)
+        }
+    }
+
+    //region CRUD für Audio
+
     //Methode zum Holen der MP3-Dateien
     fun getAllMp3Files(context: Context): List<myAudio> {
         val mp3List = mutableListOf<myAudio>()
@@ -115,44 +164,6 @@ class DataBaseHelper(context: Context) :
         return mp3List;
     }
 
-    //Methode zum Erneuern der db Version
-    //Nicht verwendet
-    override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-    }
-
-    //Methode, um ForeignKeys zu aktivieren
-    override fun onOpen(db: SQLiteDatabase?) {
-        super.onOpen(db)
-        if (db is SQLiteDatabase) {
-            db.setForeignKeyConstraintsEnabled(true)
-        }
-    }
-
-    //region CRUD für Audio
-
-    //Methode, um alle Audiodateien aus der Datenbank zu holen
-    fun getAllAudiosFromDB(): List<myAudio> {
-        val audioList = mutableListOf<myAudio>();
-        val query = "SELECT * FROM $TABLE_AUDIO";
-        val db = readableDatabase;
-        val cursor = db.rawQuery(query, null);
-
-        if (cursor.moveToFirst()) {
-            do {
-                val audio = myAudio();
-                audio.audioID = cursor.getInt(0);
-                audio.audioTitle = cursor.getString(1);
-                audio.audioArtist = cursor.getString(2);
-                audio.audioGenre = cursor.getString(3);
-                audio.audioRelDate = cursor.getString(4);
-                audio.audioPath = cursor.getString(5);
-                audioList.add(audio)
-            } while (cursor.moveToNext())
-        }
-        cursor.close();
-        return audioList;
-    }
-
     //Methode, um die nächste verfügbare ID aus der Datenbank zu bekommen
     fun getNextAvailableAudioID(): Int {
         val myQuery: String = "SELECT MAX(${AUDIO_ID}) FROM ${TABLE_AUDIO}";
@@ -201,6 +212,7 @@ class DataBaseHelper(context: Context) :
     }
 
     //Methode für das Löschen eines Eintrags aus der Datenbank
+    //Nicht nötig, weil das Löschen von Audiodateien dem User selbst überlassen ist
     fun deleteAudioEntry(track: myAudio): Boolean {
         val db = writableDatabase
         try {

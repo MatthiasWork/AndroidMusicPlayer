@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:padding="15dp"
+    android:padding="10dp"
     android:id="@+id/main">
 
     <LinearLayout
@@ -18,10 +18,18 @@
             android:layout_height="match_parent"
             android:layout_weight="1">
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSettings"
+                android:layout_width="match_parent"
+                android:layout_height="48sp"
+                app:iconSize="30sp"
+                app:icon="@drawable/settings_24px"/>
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvPlaylists"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:layout_marginTop="48sp"/>
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fabAddPlaylist"
@@ -60,9 +68,8 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:layout_width="wrap_content"
-                    android:layout_height="45sp"
+                    android:layout_height="match_parent"
                     app:icon="@drawable/unknown_med_24px"
-                    android:padding="8dp"
                     app:iconSize="30sp"
                     android:id="@+id/btnChangeSortOrder"/>
             </LinearLayout>
@@ -70,7 +77,7 @@
             <com.google.android.material.button.MaterialButtonToggleGroup
                 android:id="@+id/toggleSortOptions"
                 android:layout_width="match_parent"
-                android:layout_height="38sp"
+                android:layout_height="40sp"
                 app:singleSelection="true"
                 app:selectionRequired="true">
 

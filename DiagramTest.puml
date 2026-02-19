@@ -49,26 +49,6 @@ class MusicService {
 }
 
 class DataBaseHelper {
-  + onCreate(SQLiteDatabase)
-  + onOpen(SQLiteDatabase)
-  + onUpgrade(SQLiteDatabase, Int, Int)
-  + getAllMp3Files(Context): List<myAudio>
-  + getAllAudiosFromDB(): List<myAudio>
-  + getAudiosByPlaylist(Int): List<myAudio>
-  + getAllPlaylistsFromDB(): List<myPlaylist>
-  + getPlaylistIDsForAudio(Int): List<Int>
-  + getNextAvailableAudioID(): Int
-  + getNextAvailablePlaylistID(): Int
-  + audioExists(Int): Boolean
-  + addAudioToDatabase(myAudio)
-  + addAudioToPlaylist(Int, Int)
-  + removeAudioFromPlaylist(Int, Int)
-  + addPlaylistToDatabase(myPlaylist)
-  + deleteAudioEntry(myAudio): Boolean
-  + deletePlaylistEntry(myPlaylist): Boolean
-  + editAudioEntry(myAudio): Boolean
-  + editPlaylistEntry(myPlaylist): Boolean
-  + removeDeletedAudios(List<Int>)
 }
 
 class myAudio {

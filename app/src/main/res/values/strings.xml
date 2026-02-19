@@ -4,11 +4,13 @@
     <string name="loeschenAnweisung">Löschen</string>
     <string name="bearbeitenAnweisung">Bearbeiten</string>
     <string name="addToPlaylist">Zur Playlist hinzufügen</string>
+    <string name="addNewFolder">Ordner entfernen oder neuen hinzufügen</string>
     <string name="remFromPlaylist">Von Playlist entfernen</string>
     <string name="confirmation">Speichern</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
     <string name="playPause">Play/Pause</string>
+    <string name="searchFolder">Ordner suchen...</string>
 
     <string name="playlistNameHint">Neuer Name</string>
     <string name="playlistDescHint">Playlist umbennen</string>

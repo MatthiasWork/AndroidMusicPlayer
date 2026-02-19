@@ -32,7 +32,7 @@ class MusicService : Service() {
     private val saveStateRunnable = object : Runnable {
         override fun run() {
             savePlaybackState()
-            saveStateHandler.postDelayed(this, 1000)  // Jede Sekunde
+            saveStateHandler.postDelayed(this, 100)  // Jede Sekunde
         }
     }
 
@@ -64,6 +64,7 @@ class MusicService : Service() {
     }
 
     fun playTrack(track: myAudio, index: Int) {
+        android.util.Log.d("MusicService", "playTrack START: ${track.audioTitle}, isPlaying=${mediaPlayer.isPlaying}")
         currentTrack = track
         currentIndex = index
 
@@ -76,6 +77,7 @@ class MusicService : Service() {
         )
         mediaPlayer.setDataSource(applicationContext, Uri.parse(track.audioPath))
         mediaPlayer.prepare()
+
         mediaPlayer.start()
 
         // Vordergrund-Service starten mit Notification
@@ -222,6 +224,7 @@ class MusicService : Service() {
         android.util.Log.d("MusicService", "SAVED: TrackID=${currentTrack?.audioID}, Position=${mediaPlayer.currentPosition}");
         val verify = prefs.getInt("currentTrackID", -1)
         android.util.Log.d("MusicService", "VERIFIED: Read back trackID=$verify")
+        android.util.Log.d("MusicService", "Playback speed: ${mediaPlayer.playbackParams.speed}")
 
     }
 

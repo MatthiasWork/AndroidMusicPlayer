@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.androidprojektaudioplayer.databinding.ActivityMainBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -319,6 +320,45 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        // Settings Button - Ordnerauswahl
+        binding.btnSettings.setOnClickListener {
+            val bottomSheet = BottomSheetDialog(this)
+            val view = layoutInflater.inflate(R.layout.musicfolderlib_holder, null)  // Du musst dieses Layout noch erstellen
+
+            val folders = myDB.getAllAudioFolders(this) as MutableList<String>
+            val folderAdapter = MyAdapterFolder(folders, this)
+
+            // Aktuell ausgewählte Ordner aus SharedPreferences laden
+            val prefs = applicationContext.getSharedPreferences("AppSettings", MODE_PRIVATE)
+            val savedFolders = prefs.getStringSet("selectedFolders", null)
+
+            if (savedFolders != null) {
+                folderAdapter.selectedFolders.addAll(savedFolders)
+            } else {
+                // Wenn nichts gespeichert, alle Ordner vorauswählen
+                folderAdapter.selectedFolders.addAll(folders)
+            }
+
+            view.findViewById<RecyclerView>(R.id.rvFolderSelection).apply {
+                layoutManager = LinearLayoutManager(this@MainActivity)
+                adapter = folderAdapter
+            }
+
+            view.findViewById<MaterialButton>(R.id.btnConfirmFolderChanges).setOnClickListener {
+                // Auswahl speichern
+                prefs.edit()
+                    .putStringSet("selectedFolders", folderAdapter.selectedFolders)
+                    .apply()
+
+                // Songs neu laden mit Filter
+                ladeAudioDateien()
+                bottomSheet.dismiss()
+            }
+
+            bottomSheet.setContentView(view)
+            bottomSheet.show()
+        }
+
 
     }
 
@@ -406,7 +446,7 @@ class MainActivity : AppCompatActivity() {
                         if (!wasPlaying) service.pause()
                     } catch (e: Exception) {
                     }
-                }, 500)
+                }, 0)
             }
         }
     }
