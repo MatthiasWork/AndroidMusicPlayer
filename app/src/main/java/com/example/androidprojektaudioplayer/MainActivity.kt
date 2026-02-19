@@ -346,10 +346,6 @@ class MainActivity : AppCompatActivity() {
                 adapter = folderAdapter
             }
 
-            view.findViewById<MaterialButton>(R.id.btnOpenFolderDialog).setOnClickListener {
-                folderPickerLauncher.launch(null);
-            }
-
             view.findViewById<MaterialButton>(R.id.btnConfirmFolderChanges).setOnClickListener {
                 // Auswahl speichern
                 prefs.edit()
@@ -363,36 +359,6 @@ class MainActivity : AppCompatActivity() {
 
             bottomSheet.setContentView(view)
             bottomSheet.show()
-        }
-
-
-    }
-
-    private val folderPickerLauncher = registerForActivityResult(
-        ActivityResultContracts.OpenDocumentTree()
-    ) { uri ->
-        if (uri != null) {
-            contentResolver.takePersistableUriPermission(
-                uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
-            )
-
-            // Ordner-Pfad extrahieren (funktioniert nur teilweise - URIs sind komplex)
-            val path = uri.path?.replace("/tree/primary:", "/storage/emulated/0/")
-                ?.replace("/tree/", "/storage/emulated/0/") ?: uri.toString()
-
-            val prefs = applicationContext.getSharedPreferences("AppSettings", MODE_PRIVATE)
-            val savedFolders = prefs.getStringSet("selectedFolders", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
-            savedFolders.add(path)
-
-            prefs.edit()
-                .putStringSet("selectedFolders", savedFolders)
-                .commit()
-
-            android.util.Log.d("MainActivity", "Folder added: $path")
-
-            // Songs neu laden - KEIN Dialog neu öffnen
-            ladeAudioDateien()
         }
     }
 

@@ -131,7 +131,7 @@ class DataBaseHelper(context: Context) :
             MediaStore.Audio.Media.DATA  // Für Ordner-Filter
         )
 
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.RELATIVE_PATH} LIKE '%Music%'"
+        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
 
         val cursor = context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
