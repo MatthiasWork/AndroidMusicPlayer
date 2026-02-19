@@ -1,5 +1,6 @@
 package com.example.androidprojektaudioplayer
 
+import android.app.DatePickerDialog
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import java.util.Calendar
 
 class MyAdapterAudio(
     private val audioList: MutableList<myAudio>,
@@ -64,6 +67,22 @@ class MyAdapterAudio(
                 editView.findViewById<TextInputEditText>(R.id.etEditAudioGenre).setText(currentTrack.audioGenre)
                 editView.findViewById<TextInputEditText>(R.id.etEditAudioDate).setText(currentTrack.audioRelDate)
 
+                editView.findViewById<TextInputLayout>(R.id.tilEditAudioDate)?.setEndIconOnClickListener {
+                    val calendar = Calendar.getInstance()
+                    DatePickerDialog(
+                        contextExt,
+                        { _, year, month, day ->
+                            val formattedDate =
+                                String.format("%02d.%02d.%04d", day, month + 1, year)
+                            editView.findViewById<TextInputEditText>(R.id.etEditAudioDate)
+                                .setText(formattedDate)
+                        },
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DAY_OF_MONTH)
+                    ).show()
+                }
+
                 editView.findViewById<MaterialButton>(R.id.btnSaveEditAudio).setOnClickListener {
                     currentTrack.audioTitle = editView.findViewById<TextInputEditText>(R.id.etEditAudioTitle).text.toString()
                     currentTrack.audioArtist = editView.findViewById<TextInputEditText>(R.id.etEditAudioArtist).text.toString()
@@ -74,7 +93,7 @@ class MyAdapterAudio(
                     editPopup.dismiss()
                 }
 
-                editPopup.showAsDropDown(holder.btnMore)
+                editPopup.showAtLocation(holder.itemView, android.view.Gravity.CENTER, 0, 0)
             }
             popupView.findViewById<MaterialButton>(R.id.btnAddToPlaylistPopUp).setOnClickListener {
                 onAddToPlaylist(currentTrack)

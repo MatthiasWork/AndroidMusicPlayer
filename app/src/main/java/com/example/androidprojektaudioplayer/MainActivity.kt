@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.media.AudioManager
+import android.media.MediaMetadataRetriever
 import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
@@ -161,6 +162,42 @@ class MainActivity : AppCompatActivity() {
                             Intent.FLAG_GRANT_READ_URI_PERMISSION
                         )
                         currentPathField?.setText(uri.toString())
+
+                        // Metadaten auslesen
+                        try {
+                            val retriever = MediaMetadataRetriever()
+                            retriever.setDataSource(this, uri)
+
+                            val title =
+                                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
+                                    ?: uri.lastPathSegment ?: "Unbekannt"
+                            val artist =
+                                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
+                                    ?: "Unbekannt"
+                            val album =
+                                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE)
+                                    ?: "Unbekannt"
+                            val date =
+                                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE)
+                                    ?: ""
+
+                            // Felder im Dialog befüllen
+                            val rootView = currentPathField?.rootView
+                            rootView?.findViewById<TextInputEditText>(R.id.etAudioTitle)
+                                ?.setText(title)
+                            rootView?.findViewById<TextInputEditText>(R.id.etAudioArtist)
+                                ?.setText(artist)
+                            rootView?.findViewById<TextInputEditText>(R.id.etAudioGenre)
+                                ?.setText(album)
+                            rootView?.findViewById<TextInputEditText>(R.id.etAudioDate)
+                                ?.setText(date)
+                            retriever.release()
+                        } catch (e: Exception) {
+                            android.util.Log.e(
+                                "MainActivity-Metadaten",
+                                "Error reading metadata: $e"
+                            )
+                        }
                     }
                 }
             }
@@ -325,7 +362,10 @@ class MainActivity : AppCompatActivity() {
         // Settings Button - Ordnerauswahl
         binding.btnSettings.setOnClickListener {
             val bottomSheet = BottomSheetDialog(this)
-            val view = layoutInflater.inflate(R.layout.musicfolderlib_holder, null)  // Du musst dieses Layout noch erstellen
+            val view = layoutInflater.inflate(
+                R.layout.musicfolderlib_holder,
+                null
+            )  // Du musst dieses Layout noch erstellen
 
             val folders = myDB.getAllAudioFolders(this) as MutableList<String>
             val folderAdapter = MyAdapterFolder(folders, this)
@@ -426,10 +466,14 @@ class MainActivity : AppCompatActivity() {
                     handler.post(updateSeekBar)
                 }
             } else {
-                val prefs = applicationContext.getSharedPreferences("MusicPlayerPrefs", MODE_PRIVATE)
+                val prefs =
+                    applicationContext.getSharedPreferences("MusicPlayerPrefs", MODE_PRIVATE)
                 val trackID = prefs.getInt("currentTrackID", -1)
                 val position = prefs.getInt("currentPosition", 0)
-                android.util.Log.d("MainActivity", "LOADED: TrackID=$trackID, Position=$position, SongListSize=${songList.size}")
+                android.util.Log.d(
+                    "MainActivity",
+                    "LOADED: TrackID=$trackID, Position=$position, SongListSize=${songList.size}"
+                )
                 val wasPlaying = prefs.getBoolean("wasPlaying", false)
                 if (trackID == -1 || songList.isEmpty()) return
 
