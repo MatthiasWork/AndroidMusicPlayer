@@ -1,13 +1,22 @@
 @startuml
 skinparam classAttributeIconSize 0
+skinparam defaultFontSize 10
+skinparam classFontSize 10
 
-' Ebene 1: MainActivity ganz oben
 class MainActivity {
-- DataBaseHelper myDB
-- MusicService? musicService
-- MutableList<myAudio> songList
-- Int currentPlaylistID
+- binding: ActivityMainBinding
+- myDB: DataBaseHelper
+- musicService: MusicService?
+- serviceBound: Boolean
+- order: Boolean
+- handler: Handler
+- songList: List<myAudio>
+- currentPlaylistID: Int
+- filePickerLauncher: ActivityResultLauncher
+- currentPathField: TextInputEditText?
+- currentSortOption: SortOption
 + onCreate(Bundle)
++ onRequestPermissionsResult(Int, String[], IntArray)
 + onResume()
 + onDestroy()
 + playTrack(myAudio)
@@ -18,46 +27,100 @@ class MainActivity {
 }
 
 enum SortOption {
-+  NAME
-+  ARTIST
-+  GENRE
-+  RELEASE
+NAME
+ARTIST
+GENRE
+RELEASE
 }
 
-MainActivity - SortOption
-
-' Ebene 2: Services direkt darunter
+MainActivity -- SortOption
 MainActivity -down-> MusicService
-MainActivity -down-> DataBaseHelper
 
 class MusicService {
-+ MediaPlayer mediaPlayer
-+ myAudio? currentTrack
-+ MutableList<myAudio> trackList
+- binder: MusicBinder
++ mediaPlayer: MediaPlayer
++ currentTrack: myAudio?
++ currentIndex: Int
++ trackList: List<myAudio>
+- CHANNEL_ID: String
+- NOTIFICATION_ID: Int
+- saveStateHandler: Handler
++ onTrackChanged: ((myAudio) -> Unit)?
++ onPlayStateChanged: ((Boolean) -> Unit)?
 + onCreate()
++ onBind(Intent): IBinder
++ onStartCommand(Intent?, Int, Int): Int
 + playTrack(myAudio, Int)
 + pause()
 + resume()
 + togglePlayPause()
 + next()
 + previous()
+- createNotificationChannel()
+- createNotification(): Notification
+- updateNotification()
 - savePlaybackState()
++ onDestroy()
 }
 
+MusicService -down-> myAudio
+
+class myAudio {
++ audioID: Int
++ audioTitle: String
++ audioArtist: String
++ audioGenre: String
++ audioPath: String
++ audioRelDate: String
++ toString(): String
+}
+
+MainActivity -down-> DataBaseHelper
+
 class DataBaseHelper {
-+ getAllMp3Files(Context): List<myAudio>
-+ getAllAudioFolders(Context): List<String>
-+ getAudiosByPlaylist(Int): List<myAudio>
-+ getAllPlaylistsFromDB(): List<myPlaylist>
++ onCreate(SQLiteDatabase)
++ onUpgrade(SQLiteDatabase, Int, Int)
++ onOpen(SQLiteDatabase)
++ getAllMp3Files(Context): List
++ getAllAudioFolders(Context): List
++ getAudiosByPlaylist(Int): List
++ getAllPlaylistsFromDB(): List
++ getPlaylistIDsForAudio(Int): List
++ getNextAvailableAudioID(): Int
++ getNextAvailablePlaylistID(): Int
++ audioExists(Int): Boolean
 + addAudioToDatabase(myAudio)
 + addPlaylistToDatabase(myPlaylist)
 + addAudioToPlaylist(Int, Int)
 + removeAudioFromPlaylist(Int, Int)
++ removeDeletedAudios(List)
++ deleteAudioEntry(myAudio): Boolean
++ deletePlaylistEntry(myPlaylist): Boolean
++ editAudioEntry(myAudio): Boolean
++ editPlaylistEntry(myPlaylist): Boolean
 }
 
-' Ebene 3: DetailActivity separat
+DataBaseHelper -down-> myPlaylist
+
+class myPlaylist {
++ playlistID: Int
++ playlistTitle: String
++ toString(): String
+}
+
+DataBaseHelper -down-> myAudioPlaylist
+
+class myAudioPlaylist {
++ audioPlaylistFKPK: Int
++ playlistAudioFKPK: Int
++ toString(): String
+}
+
 class DetailActivity {
-- MusicService? musicService
+- binding: DetailsBinding
+- musicService: MusicService?
+- serviceBound: Boolean
+- handler: Handler
 + onCreate(Bundle)
 + onDestroy()
 - formatTime(Int): String
@@ -65,40 +128,12 @@ class DetailActivity {
 
 DetailActivity -down-> MusicService
 
-' Ebene 4: Adapter alle untereinander
-MusicService -down-> myAudio
-
-class myAudio {
-+ Int audioID
-+ String audioTitle
-+ String audioArtist
-+ String audioGenre
-+ String audioPath
-+ String audioRelDate
-+ String toString()
-}
-
-DataBaseHelper -down-> myPlaylist
-
-class myPlaylist {
-+ Int playlistID
-+ String playlistTitle
-+ String toString()
-}
-
-DataBaseHelper -down-> myAudioPlaylist
-
-class myAudioPlaylist {
-+ Int audioPlaylistFKPK
-+ Int playlistAudioFKPK
-+ String toString()
-}
-
 myAudio -down-> MyAdapterAudio
 
 class MyAdapterAudio {
-- MutableList<myAudio> audioList
-- Int currentPlaylistID
+- audioList: List<myAudio>
+- contextExt: Context
+- currentPlaylistID: Int
 + onCreateViewHolder(ViewGroup, Int): MyViewHolder
 + onBindViewHolder(MyViewHolder, Int)
 + getItemCount(): Int
@@ -107,7 +142,8 @@ class MyAdapterAudio {
 myPlaylist -down-> MyAdapterPlaylist
 
 class MyAdapterPlaylist {
-- MutableList<myPlaylist> playlistList
+- playlistList: List<myPlaylist>
+- contextExt: Context
 + onCreateViewHolder(ViewGroup, Int): MyViewHolder
 + onBindViewHolder(MyViewHolder, Int)
 + getItemCount(): Int
@@ -116,21 +152,21 @@ class MyAdapterPlaylist {
 myPlaylist -down-> MyAdapterPlaylistSelect
 
 class MyAdapterPlaylistSelect {
-- MutableList<myPlaylist> playlistList
-+ Set<Int> selectedPlaylists
+- playlistList: List<myPlaylist>
++ selectedPlaylists: Set<Int>
 + onCreateViewHolder(ViewGroup, Int): MyViewHolder
 + onBindViewHolder(MyViewHolder, Int)
 + getItemCount(): Int
 }
 
 class MyAdapterFolder {
-- MutableList<String> folderList
-+ Set<String> selectedFolders
+- folderList: List<String>
+- contextExt: Context
++ selectedFolders: Set<String>
 + onCreateViewHolder(ViewGroup, Int): MyViewHolder
 + onBindViewHolder(MyViewHolder, Int)
 + getItemCount(): Int
 }
 
 MainActivity -down-> MyAdapterFolder
-
 @enduml
