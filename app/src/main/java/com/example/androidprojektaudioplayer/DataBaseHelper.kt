@@ -117,15 +117,21 @@ class DataBaseHelper(context: Context) :
     //Methode zum Holen der MP3-Dateien
     fun getAllMp3Files(context: Context): List<myAudio> {
         val mp3List = mutableListOf<myAudio>()
+
+        // Ausgewählte Ordner laden
+        val prefs = context.getSharedPreferences("AppSettings", Context.MODE_PRIVATE)
+        val selectedFolders = prefs.getStringSet("selectedFolders", null)
+
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.DISPLAY_NAME,
             MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.GENRE,
+            MediaStore.Audio.Media.ALBUM,  // Album statt GENRE
             MediaStore.Audio.Media.DATE_ADDED,
+            MediaStore.Audio.Media.DATA  // Für Ordner-Filter
         )
-        val selection =
-            "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.RELATIVE_PATH} LIKE '%Music%'"
+
+        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
 
         val cursor = context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -134,34 +140,41 @@ class DataBaseHelper(context: Context) :
             null,
             "${MediaStore.Audio.Media.DISPLAY_NAME} ASC"
         )?.use { cursor ->
-            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID);
-            val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME);
-            val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST);
-            val genreColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.GENRE);
-            val relDateColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED);
+            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+            val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
+            val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+            val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+            val relDateColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
+            val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
 
             while (cursor.moveToNext()) {
-                val id = cursor.getInt(idColumn);
-                val name = cursor.getString(nameColumn);
-                val artist = cursor.getString(artistColumn) ?: context.getString(R.string.notFound);
-                val genre = cursor.getString(genreColumn) ?: context.getString(R.string.notFound);
-                var release =
-                    cursor.getString(relDateColumn) ?: context.getString(R.string.notFound);
-                if (release != context.getString(R.string.notFound)) {
-                    release =
-                        java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.getDefault())
-                            .format(java.util.Date(cursor.getLong(relDateColumn) * 1000L));
+                val id = cursor.getInt(idColumn)
+                val name = cursor.getString(nameColumn)
+                val artist = cursor.getString(artistColumn) ?: context.getString(R.string.notFound)
+                val album = cursor.getString(albumColumn) ?: context.getString(R.string.notFound)
+                val path = cursor.getString(dataColumn)
+                val folder = File(path).parent
+
+                // Ordner-Filter
+                if (selectedFolders == null || selectedFolders.isEmpty() ||
+                    (folder != null && selectedFolders.contains(folder))) {
+
+                    var release = cursor.getString(relDateColumn) ?: context.getString(R.string.notFound)
+                    if (release != context.getString(R.string.notFound)) {
+                        release = java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.getDefault())
+                            .format(java.util.Date(cursor.getLong(relDateColumn) * 1000L))
+                    }
+
+                    val contentUri: Uri = ContentUris.withAppendedId(
+                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        id.toLong()
+                    )
+
+                    mp3List += myAudio(id, name, artist, album, contentUri.toString(), release)
                 }
-
-                val contentUri: Uri = ContentUris.withAppendedId(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    id.toLong()
-                );
-
-                mp3List += myAudio(id, name, artist, genre, contentUri.toString(), release);
             }
         }
-        return mp3List;
+        return mp3List
     }
 
     //Methode, um die nächste verfügbare ID aus der Datenbank zu bekommen
