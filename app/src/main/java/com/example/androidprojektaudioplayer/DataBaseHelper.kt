@@ -212,15 +212,24 @@ class DataBaseHelper(context: Context) :
     //Methode, um gelöschte Audiodateien aus der Datenbank zu entfernen
     fun removeDeletedAudios(currentIds: List<Int>) {
         if (currentIds.isEmpty()) return
-        val idList = currentIds.joinToString(",")
-        try {
-            writableDatabase.execSQL(
-                "DELETE FROM $TABLE_AUDIO WHERE $AUDIO_ID NOT IN ($idList) AND $AUDIO_SAVEPATH LIKE 'content://media%'"
-            )
-        } catch (ex: Exception) {
-            Log.e(TAG, "Fehler beim Löschen ${ex}");
-        }
 
+        val placeholders = currentIds.joinToString(",") { "?" }
+
+        // Nur Songs löschen die:
+        // 1. Nicht in currentIds (nicht mehr gefunden)
+        // 2. MediaStore-Pfad haben
+        // 3. NICHT in Custom-Playlists sind (nur in "Alle")
+        val query = "DELETE FROM $TABLE_AUDIO WHERE $AUDIO_ID NOT IN ($placeholders) " +
+                "AND $AUDIO_SAVEPATH LIKE ? " +
+                "AND $AUDIO_ID NOT IN (SELECT $FKPK_AUDIOPLAYLIST FROM $TABLE_PLAYAUDIO WHERE $FKPK_PLAYLISTAUDIO != 1)"
+
+        val args = currentIds.map { it.toString() }.toTypedArray() + "content://media%"
+
+        try {
+            writableDatabase.execSQL(query, args)
+        } catch (ex: Exception) {
+            Log.e(TAG, "Fehler beim Löschen gelöschter Audios: $ex")
+        }
     }
 
     //Methode für das Hinzufügen eines Eintrags zur Datenbank
