@@ -213,9 +213,14 @@ class DataBaseHelper(context: Context) :
     fun removeDeletedAudios(currentIds: List<Int>) {
         if (currentIds.isEmpty()) return
         val idList = currentIds.joinToString(",")
-        writableDatabase.execSQL(
-            "DELETE FROM $TABLE_AUDIO WHERE $AUDIO_ID NOT IN ($idList) AND $AUDIO_SAVEPATH LIKE 'content://media%'"
-        )
+        try {
+            writableDatabase.execSQL(
+                "DELETE FROM $TABLE_AUDIO WHERE $AUDIO_ID NOT IN ($idList) AND $AUDIO_SAVEPATH LIKE 'content://media%'"
+            )
+        } catch (ex: Exception) {
+            Log.e(TAG, "Fehler beim Löschen ${ex}");
+        }
+
     }
 
     //Methode für das Hinzufügen eines Eintrags zur Datenbank
@@ -247,12 +252,15 @@ class DataBaseHelper(context: Context) :
 
     //Methode für das Bearbeiten eines Eintrags aus der Datenbank
     fun editAudioEntry(track: myAudio): Boolean {
-        val editString: String =
-            "UPDATE ${TABLE_AUDIO} SET ${AUDIO_TITLE} = '${track.audioTitle}', ${AUDIO_ARTIST} = '${track.audioArtist}'" +
-                    ", ${AUDIO_RELDATE} = '${track.audioRelDate}', ${AUDIO_GENRE} = '${track.audioGenre}', ${AUDIO_SAVEPATH} = '${track.audioPath}' WHERE ${AUDIO_ID} = '${track.audioID}'";
         val db = writableDatabase;
         try {
-            db.execSQL(editString);
+            val value = ContentValues();
+            value.put(AUDIO_TITLE, track.audioTitle);
+            value.put(AUDIO_ARTIST, track.audioArtist)
+            value.put(AUDIO_RELDATE, track.audioRelDate);
+            value.put(AUDIO_GENRE, track.audioGenre);
+            value.put(AUDIO_SAVEPATH, track.audioPath);
+            db.update(TABLE_AUDIO, value, "$AUDIO_ID = ?", arrayOf(track.audioID.toString()))
         } catch (ex: Exception) {
             Log.e(TAG, "Fehler beim Aendern des Eintrags ${track.audioTitle} aus Datenbank \n $ex");
         }
@@ -338,12 +346,7 @@ class DataBaseHelper(context: Context) :
     //Methode, um alle Audiodateien einer Playlist zu holen
     fun getAudiosByPlaylist(playlistID: Int): List<myAudio> {
         val audioList = mutableListOf<myAudio>()
-        val query = """
-        SELECT * FROM $TABLE_AUDIO 
-        INNER JOIN $TABLE_PLAYAUDIO 
-        ON $TABLE_AUDIO.$AUDIO_ID = $TABLE_PLAYAUDIO.$FKPK_AUDIOPLAYLIST
-        WHERE $TABLE_PLAYAUDIO.$FKPK_PLAYLISTAUDIO = $playlistID
-    """
+        val query = "SELECT * FROM $TABLE_AUDIO INNER JOIN $TABLE_PLAYAUDIO ON $TABLE_AUDIO.$AUDIO_ID = $TABLE_PLAYAUDIO.$FKPK_AUDIOPLAYLIST WHERE $TABLE_PLAYAUDIO.$FKPK_PLAYLISTAUDIO = $playlistID";
         val cursor = readableDatabase.rawQuery(query, null)
         if (cursor.moveToFirst()) {
             do {
@@ -387,16 +390,17 @@ class DataBaseHelper(context: Context) :
             Log.e(TAG, "Die Alle-Playlist kann nicht bearbeitet werden")
             return false
         }
-        val editString: String =
-            "UPDATE ${TABLE_PLAYLIST} SET ${PLAYLIST_TITLE} = '${playList.playlistTitle}' WHERE ${PLAYLIST_ID} = '${playList.playlistID}'";
         val db = writableDatabase;
         try {
-            db.execSQL(editString);
+            val values = ContentValues();
+            values.put(PLAYLIST_TITLE, playList.playlistTitle);
+            db.update(TABLE_PLAYLIST, values, "$PLAYLIST_ID = ?", arrayOf(playList.playlistID.toString()));
         } catch (ex: Exception) {
             Log.e(
                 TAG,
                 "Fehler beim Aendern des Eintrags ${playList.playlistTitle} aus Datenbank \n $ex"
             );
+            return false;
         }
         return true;
     }
