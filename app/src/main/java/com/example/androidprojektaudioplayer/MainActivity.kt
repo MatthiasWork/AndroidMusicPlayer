@@ -419,10 +419,7 @@ class MainActivity : AppCompatActivity() {
     //Wird aufgerufen, wenn die Activity im Fokus ist
     override fun onResume() {
         super.onResume()
-        if (songList.isEmpty()) {
-            ladeAudioDateien()
-        }
-
+        ladeAudioDateien()
         // UI aktualisieren wenn Service bereits läuft
         if (serviceBound) {
             restorePlaybackState()
