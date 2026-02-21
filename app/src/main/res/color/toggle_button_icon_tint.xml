@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Ausgewählt: Schwarzes Icon -->
+    <item android:state_checked="true" android:color="@color/black"/>
+    <!-- Nicht ausgewählt: Orange Icon -->
+    <item android:color="@color/primary_accent"/>
+</selector>

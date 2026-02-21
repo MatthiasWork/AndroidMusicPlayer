@@ -25,4 +25,5 @@
     <string name="audioArtistHint">Künstler</string>
     <string name="audioGenreHint">Genre</string>
     <string name="audioDateHint">Datum</string>
+
 </resources>

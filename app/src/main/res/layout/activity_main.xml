@@ -16,14 +16,21 @@
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="1.5">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSettings"
                 android:layout_width="match_parent"
                 android:layout_height="48sp"
                 app:iconSize="30sp"
-                app:icon="@drawable/settings_24px"/>
+                app:icon="@drawable/settings_24px"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:backgroundTint="@android:color/transparent"
+                app:strokeWidth="0dp"
+                style="@style/Widget.Material3.Button.IconButton"/>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvPlaylists"
@@ -39,7 +46,9 @@
                 android:layout_margin="6dp"
                 app:srcCompat="@drawable/add_box_24px"
                 app:fabSize="normal"
-                app:maxImageSize="30sp"/>
+                app:maxImageSize="30sp"
+                app:backgroundTint="@color/primary_accent"
+                app:tint="@color/black"/>
 
         </FrameLayout>
 
@@ -61,23 +70,33 @@
                 <androidx.appcompat.widget.SearchView
                     android:id="@+id/svSearch"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="38sp"
                     android:layout_weight="1"
                     android:queryHint="@string/sucheHint"
+                    android:background="@drawable/searchview_background"
                     android:iconifiedByDefault="false"/>
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnChangeSortOrder"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     app:icon="@drawable/unknown_med_24px"
                     app:iconSize="30sp"
-                    android:id="@+id/btnChangeSortOrder"/>
+                    app:iconTint="@color/primary_accent"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:backgroundTint="@android:color/transparent"
+                    app:strokeWidth="0dp"
+                    style="@style/Widget.Material3.Button.IconButton"/>
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButtonToggleGroup
                 android:id="@+id/toggleSortOptions"
                 android:layout_width="match_parent"
                 android:layout_height="40sp"
+                android:layout_marginTop="10sp"
                 app:singleSelection="true"
                 app:selectionRequired="true">
 
@@ -87,6 +106,14 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     app:icon="@drawable/match_case_24px"
+                    app:iconTint="@color/toggle_button_icon_tint"
+                    android:backgroundTint="@color/toggle_button_background"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="0dp"
                     app:iconSize="30sp"
                     style="@style/Widget.Material3.Button.OutlinedButton"/>
 
@@ -96,6 +123,14 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     app:icon="@drawable/person_24px"
+                    app:iconTint="@color/toggle_button_icon_tint"
+                    android:backgroundTint="@color/toggle_button_background"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="0dp"
                     app:iconSize="30sp"
                     style="@style/Widget.Material3.Button.OutlinedButton"/>
 
@@ -105,6 +140,14 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     app:icon="@drawable/genres_24px"
+                    app:iconTint="@color/toggle_button_icon_tint"
+                    android:backgroundTint="@color/toggle_button_background"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="0dp"
                     app:iconSize="30sp"
                     style="@style/Widget.Material3.Button.OutlinedButton"/>
 
@@ -114,6 +157,14 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     app:icon="@drawable/calendar_month_24px"
+                    app:iconTint="@color/toggle_button_icon_tint"
+                    android:backgroundTint="@color/toggle_button_background"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="0dp"
                     app:iconSize="30sp"
                     style="@style/Widget.Material3.Button.OutlinedButton"/>
 
@@ -149,8 +200,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/info_24px"
-                android:scaleType="centerInside"
-                android:padding="20dp"/>
+                android:scaleType="fitCenter"
+                android:padding="20dp"
+                android:tint="@color/black"/>
 
         </com.google.android.material.card.MaterialCardView>
 
@@ -158,8 +210,9 @@
             android:id="@+id/tvTitleText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Titel"
+            android:text="@string/audioHint"
             android:textSize="16sp"
+            android:textColor="@color/white"
             android:textStyle="bold"
             android:maxLines="1"
             android:ellipsize="end"
@@ -173,7 +226,8 @@
             android:id="@+id/tvSubTitleText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Untertitel"
+            android:text="@string/audioArtistHint"
+            android:textColor="@color/subtext"
             android:textSize="14sp"
             android:maxLines="1"
             android:ellipsize="end"

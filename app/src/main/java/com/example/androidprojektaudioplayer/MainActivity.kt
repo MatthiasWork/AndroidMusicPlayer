@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.media.AudioManager
 import android.media.MediaMetadataRetriever
 import android.os.Bundle
@@ -14,8 +15,10 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.view.View
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.SeekBar
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -127,6 +130,25 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
         })
+
+        binding.svSearch.apply {
+            // Text-Farbe
+            findViewById<TextView>(androidx.appcompat.R.id.search_src_text)?.apply {
+                setTextColor(ContextCompat.getColor(context, R.color.primary_accent))
+                setHintTextColor(ContextCompat.getColor(context, R.color.subtext))
+            }
+
+            // Icon-Farben - beide Methoden nutzen
+            findViewById<ImageView>(androidx.appcompat.R.id.search_mag_icon)?.apply {
+                setColorFilter(ContextCompat.getColor(context, R.color.primary_accent))
+                imageTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.primary_accent))
+            }
+
+            findViewById<ImageView>(androidx.appcompat.R.id.search_close_btn)?.apply {
+                setColorFilter(ContextCompat.getColor(context, R.color.primary_accent))
+                imageTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.primary_accent))
+            }
+        }
 
         // SeekBar Listener
         binding.sbProgress.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
