@@ -3,18 +3,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/songID"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    android:background="@drawable/song_card_background"
+    android:padding="8dp">
 
     <!-- Oberer Text -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:background="#3F51B5"
+        android:layout_height="40dp"
+        android:background="@android:color/transparent"
         android:gravity="center"
         android:text="Title"
-        android:textColor="@android:color/white"
+        android:textColor="@color/primary_accent"
         android:textSize="14sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@id/btnMore"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -24,13 +28,13 @@
     <TextView
         android:id="@+id/tvArtist"
         android:layout_width="0dp"
-        android:layout_height="44dp"
+        android:layout_height="50dp"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="3dp"
-        android:background="#3F51B5"
+        android:background="@android:color/transparent"
         android:gravity="center"
         android:text="Artist"
-        android:textColor="@android:color/white"
+        android:textColor="@color/white"
         android:textSize="13sp"
         app:layout_constraintEnd_toStartOf="@id/tvGenre"
         app:layout_constraintHorizontal_weight="1"
@@ -40,13 +44,13 @@
     <TextView
         android:id="@+id/tvGenre"
         android:layout_width="0dp"
-        android:layout_height="44dp"
+        android:layout_height="50dp"
         android:layout_marginHorizontal="3dp"
         android:layout_marginTop="4dp"
-        android:background="#3F51B5"
+        android:background="@android:color/transparent"
         android:gravity="center"
         android:text="Genre"
-        android:textColor="@android:color/white"
+        android:textColor="@color/white"
         android:textSize="13sp"
         app:layout_constraintEnd_toStartOf="@id/tvDate"
         app:layout_constraintHorizontal_weight="1"
@@ -56,13 +60,13 @@
     <TextView
         android:id="@+id/tvDate"
         android:layout_width="0dp"
-        android:layout_height="44dp"
+        android:layout_height="50dp"
         android:layout_marginStart="3dp"
         android:layout_marginTop="4dp"
-        android:background="#3F51B5"
+        android:background="@android:color/transparent"
         android:gravity="center"
         android:text="Release Date"
-        android:textColor="@android:color/white"
+        android:textColor="@color/white"
         android:textSize="13sp"
         app:layout_constraintEnd_toStartOf="@id/btnMore"
         app:layout_constraintHorizontal_weight="1"
@@ -72,14 +76,14 @@
     <!-- Schlanker Button -->
     <ImageButton
         android:id="@+id/btnMore"
-        android:layout_width="48dp"
+        android:layout_width="40dp"
         android:layout_height="0dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:scaleType="fitCenter"
         android:src="@drawable/more_vert_24px"
+        app:tint="@color/primary_accent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -172,7 +172,8 @@ class DataBaseHelper(context: Context) :
 
                     val audio = myAudio()
                     audio.audioID = id
-                    audio.audioTitle = name
+                    audio.audioTitle = name.removeSuffix(".mp3").removeSuffix(".wav")
+                        .removeSuffix(".m4a").removeSuffix(".aac").removeSuffix(".ogg").removeSuffix(".flac");
                     audio.audioArtist = artist
                     audio.audioGenre = album  // Album als Genre
                     audio.audioPath = contentUri.toString()
