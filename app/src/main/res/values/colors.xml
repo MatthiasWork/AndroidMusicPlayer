@@ -4,4 +4,5 @@
     <color name="white">#E0E0E0</color>
     <color name="primary_accent">#ffa500</color>
     <color name="subtext">#E5E4E2</color>
+    <color name="detailBackground">#1AFF9800</color>
 </resources>

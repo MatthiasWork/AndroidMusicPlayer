@@ -33,6 +33,7 @@ class DetailActivity : AppCompatActivity() {
             musicService?.currentTrack?.let { track ->
                 binding.tvDetailTitle.text = track.audioTitle
                 binding.tvDetailArtist.text = track.audioArtist
+                binding.tvDetailDate.text = track.audioRelDate
                 val duration = musicService?.mediaPlayer?.duration ?: 0
                 val current = musicService?.mediaPlayer?.currentPosition ?: 0
                 binding.tvTimeCombined.text =
@@ -51,6 +52,7 @@ class DetailActivity : AppCompatActivity() {
             musicService?.onTrackChanged = { track ->
                 binding.tvDetailTitle.text = track.audioTitle
                 binding.tvDetailArtist.text = track.audioArtist
+                binding.tvDetailDate.text = track.audioRelDate
                 val duration = musicService?.mediaPlayer?.duration ?: 0
                 binding.sbDetailProgress.max = duration
                 binding.tvTimeCombined.text = "0:00 / ${formatTime(duration)}"

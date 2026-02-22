@@ -5,7 +5,7 @@
     android:id="@+id/detailsMain"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="@color/black"
     android:padding="24dp">
 
     <!-- Back Button -->
@@ -14,21 +14,53 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:icon="@drawable/arrow_back_24px"
+        app:iconTint="@color/primary_accent"
         app:iconSize="26dp"
+        android:backgroundTint="@android:color/transparent"
+        app:strokeWidth="0dp"
         style="@style/Widget.Material3.Button.IconButton"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- Platzhalter Cover Art -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardCoverArt"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:strokeColor="@color/primary_accent"
+        app:strokeWidth="2dp"
+        app:cardBackgroundColor="@color/detailBackground"
+        app:layout_constraintTop_toBottomOf="@id/btnBack"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/cardTitle"
+        app:layout_constraintVertical_chainStyle="packed"
+        android:layout_marginTop="16dp">
+
+        <ImageView
+            android:id="@+id/ivCoverArt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/library_music_40px"
+            android:scaleType="fitCenter"
+            android:padding="40dp"
+            app:tint="@color/primary_accent"/>
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- Titel Box -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardTitle"
         android:layout_width="0dp"
-        android:layout_height="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginHorizontal="32dp"
         app:cardCornerRadius="8dp"
         app:cardElevation="2dp"
-        app:layout_constraintTop_toTopOf="parent"
+        app:cardBackgroundColor="@color/detailBackground"
+        app:layout_constraintTop_toBottomOf="@id/cardCoverArt"
         app:layout_constraintBottom_toTopOf="@id/cardArtist"
-        app:layout_constraintVertical_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -39,22 +71,25 @@
             android:text="Titel"
             android:textSize="22sp"
             android:textStyle="bold"
+            android:textColor="@color/primary_accent"
             android:gravity="center"
             android:maxLines="2"
             android:ellipsize="end"
-            android:padding="16dp"/>
+            android:padding="10dp"/>
     </androidx.cardview.widget.CardView>
 
     <!-- Künstler Box -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardArtist"
         android:layout_width="0dp"
-        android:layout_height="60dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
         android:layout_marginTop="12dp"
         app:cardCornerRadius="8dp"
         app:cardElevation="2dp"
+        app:cardBackgroundColor="@color/detailBackground"
         app:layout_constraintTop_toBottomOf="@id/cardTitle"
-        app:layout_constraintBottom_toTopOf="@id/llDetailPlayback"
+        app:layout_constraintBottom_toTopOf="@id/cardDate"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -64,10 +99,39 @@
             android:layout_height="match_parent"
             android:text="Künstler"
             android:textSize="16sp"
+            android:textColor="@color/white"
             android:gravity="center"
             android:maxLines="1"
             android:ellipsize="end"
-            android:padding="8dp"/>
+            android:padding="12dp"/>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Datum Box -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardDate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:cardCornerRadius="8dp"
+        android:layout_marginHorizontal="32dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="@color/detailBackground"
+        app:layout_constraintTop_toBottomOf="@id/cardArtist"
+        app:layout_constraintBottom_toTopOf="@id/llDetailPlayback"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/tvDetailDate"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Datum"
+            android:textSize="14sp"
+            android:textColor="@color/white"
+            android:gravity="center"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:padding="10dp"/>
     </androidx.cardview.widget.CardView>
 
     <!-- Playback Buttons (zentriert) -->
@@ -78,7 +142,7 @@
         android:orientation="horizontal"
         android:gravity="center"
         android:layout_marginTop="32dp"
-        app:layout_constraintTop_toBottomOf="@id/cardArtist"
+        app:layout_constraintTop_toBottomOf="@id/cardDate"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -87,6 +151,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:icon="@drawable/skip_previous_24px"
+            app:iconTint="@color/primary_accent"
             app:iconSize="36dp"
             style="@style/Widget.Material3.Button.IconButton"/>
 
@@ -95,6 +160,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:icon="@drawable/pause_24px"
+            app:iconTint="@color/primary_accent"
             app:iconSize="36dp"
             android:layout_marginHorizontal="16dp"
             style="@style/Widget.Material3.Button.IconButton"/>
@@ -104,6 +170,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:icon="@drawable/skip_next_24px"
+            app:iconTint="@color/primary_accent"
             app:iconSize="36dp"
             style="@style/Widget.Material3.Button.IconButton"/>
 
@@ -115,6 +182,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:icon="@drawable/brand_awareness_24px"
+        app:iconTint="@color/primary_accent"
         app:iconSize="36dp"
         style="@style/Widget.Material3.Button.IconButton"
         app:layout_constraintTop_toTopOf="@id/llDetailPlayback"
@@ -127,8 +195,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="0:00 / 0:00"
-        android:textSize="12sp"
-        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="14sp"
+        android:textColor="@color/subtext"
         android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/llDetailPlayback"
         app:layout_constraintStart_toStartOf="parent"
