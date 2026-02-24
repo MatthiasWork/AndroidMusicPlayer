@@ -501,12 +501,13 @@ class MainActivity : AppCompatActivity() {
                 if (index == -1) return
 
                 service.trackList = songList
-                service.playTrack(track, index)
+                service.loadTrack(track, index);
 
                 handler.postDelayed({
                     try {
                         service.mediaPlayer.seekTo(position)
-                        if (!wasPlaying) service.pause()
+                        binding.sbProgress.progress = position
+                        binding.btnPause.setIconResource(R.drawable.play_arrow_24px)
                     } catch (e: Exception) {
                     }
                 }, 0)

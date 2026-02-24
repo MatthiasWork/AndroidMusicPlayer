@@ -63,6 +63,24 @@ class MusicService : Service() {
         return START_STICKY
     }
 
+    fun loadTrack(track: myAudio, index: Int) {
+        currentTrack = track
+        currentIndex = index
+
+        mediaPlayer.reset()
+        mediaPlayer.setAudioAttributes(
+            AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .build()
+        )
+        mediaPlayer.setDataSource(applicationContext, Uri.parse(track.audioPath))
+        mediaPlayer.prepare()   // nur vorbereiten, NICHT starten
+
+        onTrackChanged?.invoke(track)
+        onPlayStateChanged?.invoke(false)
+    }
+
     fun playTrack(track: myAudio, index: Int) {
         android.util.Log.d("MusicService", "playTrack START: ${track.audioTitle}, isPlaying=${mediaPlayer.isPlaying}")
         currentTrack = track
