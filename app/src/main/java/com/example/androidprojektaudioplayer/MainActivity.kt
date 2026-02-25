@@ -118,6 +118,12 @@ class MainActivity : AppCompatActivity() {
             bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
         }
 
+        // Main Listener, wenn der User den Fokus auf das Root Layout hat
+        binding.main.setOnTouchListener { _, _ ->
+            binding.svSearch.clearFocus()
+            false
+        }
+
         // Suchleiste Listener
         binding.svSearch.setOnQueryTextListener(object :
             androidx.appcompat.widget.SearchView.OnQueryTextListener {
@@ -141,12 +147,14 @@ class MainActivity : AppCompatActivity() {
             // Icon-Farben - beide Methoden nutzen
             findViewById<ImageView>(androidx.appcompat.R.id.search_mag_icon)?.apply {
                 setColorFilter(ContextCompat.getColor(context, R.color.primary_accent))
-                imageTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.primary_accent))
+                imageTintList =
+                    ColorStateList.valueOf(ContextCompat.getColor(context, R.color.primary_accent))
             }
 
             findViewById<ImageView>(androidx.appcompat.R.id.search_close_btn)?.apply {
                 setColorFilter(ContextCompat.getColor(context, R.color.primary_accent))
-                imageTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.primary_accent))
+                imageTintList =
+                    ColorStateList.valueOf(ContextCompat.getColor(context, R.color.primary_accent))
             }
         }
 
@@ -242,10 +250,11 @@ class MainActivity : AppCompatActivity() {
         // Sort Order Button
         binding.btnChangeSortOrder.setOnClickListener {
             order = !order
-            binding.btnChangeSortOrder.icon = getDrawable(
-                if (order) R.drawable.keyboard_arrow_up_24px
-                else R.drawable.keyboard_arrow_down_24px
-            )
+            if (order) {
+                binding.btnChangeSortOrder.icon = getDrawable(R.drawable.keyboard_arrow_up_24px)
+            } else {
+                binding.btnChangeSortOrder.icon = getDrawable(R.drawable.keyboard_arrow_down_24px)
+            }
             loadAdapter()
         }
 
