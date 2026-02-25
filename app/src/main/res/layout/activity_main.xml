@@ -204,7 +204,7 @@
                 android:src="@drawable/info_24px"
                 android:scaleType="fitCenter"
                 android:padding="20dp"
-                android:tint="@color/black"/>
+                app:tint="@color/black" />
 
         </com.google.android.material.card.MaterialCardView>
 
