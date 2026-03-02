@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -253,19 +254,42 @@ class MainActivity : AppCompatActivity() {
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
+        });
 
-        // Berechtigung zum Lesen von Audiodateien prüfen und ggf. anfordern
+        val permissionsToRequest = mutableListOf<String>()
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_AUDIO)
             != PackageManager.PERMISSION_GRANTED
         ) {
+            permissionsToRequest.add(Manifest.permission.READ_MEDIA_AUDIO)
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(Manifest.permission.READ_MEDIA_AUDIO), 1
+                permissionsToRequest.toTypedArray(), 1
             )
         } else {
             ladeAudioDateien()
         }
+
+        // Berechtigung zum Lesen von Audiodateien prüfen und ggf. anfordern
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_AUDIO)
+//            != PackageManager.PERMISSION_GRANTED
+//        ) {
+//            ActivityCompat.requestPermissions(
+//                this,
+//                arrayOf(Manifest.permission.READ_MEDIA_AUDIO), 1
+//            )
+//        } else {
+//            ladeAudioDateien()
+//        }
 
         // File-Picker registrieren: Wird genutzt, um manuell Audiodateien hinzuzufügen.
         // Nach der Auswahl werden die Metadaten (Titel, Künstler, Genre, Datum) automatisch

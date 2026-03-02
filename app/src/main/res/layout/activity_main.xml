@@ -263,7 +263,7 @@
             <com.google.android.material.button.MaterialButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:icon="@drawable/pause_24px"
+                app:icon="@drawable/play_arrow_24px"
                 app:iconSize="30dp"
                 android:id="@+id/btnPause"
                 style="@style/Widget.Material3.Button.IconButton"/>
