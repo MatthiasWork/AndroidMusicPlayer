@@ -256,8 +256,10 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         });
 
+        //Liste von benötigten Rechten
         val permissionsToRequest = mutableListOf<String>()
 
+        // Rechte abfragen
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_AUDIO)
             != PackageManager.PERMISSION_GRANTED
         ) {
@@ -278,18 +280,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             ladeAudioDateien()
         }
-
-        // Berechtigung zum Lesen von Audiodateien prüfen und ggf. anfordern
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_AUDIO)
-//            != PackageManager.PERMISSION_GRANTED
-//        ) {
-//            ActivityCompat.requestPermissions(
-//                this,
-//                arrayOf(Manifest.permission.READ_MEDIA_AUDIO), 1
-//            )
-//        } else {
-//            ladeAudioDateien()
-//        }
 
         // File-Picker registrieren: Wird genutzt, um manuell Audiodateien hinzuzufügen.
         // Nach der Auswahl werden die Metadaten (Titel, Künstler, Genre, Datum) automatisch
