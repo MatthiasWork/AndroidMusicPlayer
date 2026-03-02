@@ -23,6 +23,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -107,6 +108,8 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
         myDB = DataBaseHelper(this)
 
@@ -287,6 +290,7 @@ class MainActivity : AppCompatActivity() {
             val bottomSheet = BottomSheetDialog(this)
             bottomSheet.behavior.isFitToContents = true
             bottomSheet.behavior.skipCollapsed = true
+            bottomSheet.window?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)?.setBackgroundResource(android.R.color.transparent);
             val view = layoutInflater.inflate(R.layout.bottomsheetadd, null)
 
             val toggleAddOptions =

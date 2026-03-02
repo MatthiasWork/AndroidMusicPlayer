@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/black">
 
     <!-- Checkbox zum Wechseln -->
     <com.google.android.material.button.MaterialButtonToggleGroup
@@ -78,7 +79,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Titel"
+            android:hint="@string/audioHint"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -91,7 +92,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Künstler"
+            android:hint="@string/audioArtistHint"
             android:layout_marginTop="8dp"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
@@ -105,7 +106,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Genre"
+            android:hint="@string/audioGenreHint"
             android:layout_marginTop="8dp"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
@@ -120,7 +121,7 @@
             android:id="@+id/tilAudioDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Datum"
+            android:hint="@string/audioDateHint"
             android:layout_marginTop="8dp"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             app:endIconMode="custom"
@@ -145,7 +146,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Dateipfad"
+                android:hint="@string/fileHint"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -161,7 +162,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:text="..."
+                android:text="@string/dateiSuchDots"
                 android:layout_gravity="center_vertical"/>
 
         </LinearLayout>
@@ -171,7 +172,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Speichern"/>
+            android:text="@string/confirmation"/>
 
     </LinearLayout>
 
