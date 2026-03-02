@@ -174,7 +174,7 @@ class DetailActivity : AppCompatActivity() {
                 AudioManager.STREAM_MUSIC,
                 AudioManager.ADJUST_SAME,    // Lautstärke nicht ändern, nur UI anzeigen
                 AudioManager.FLAG_SHOW_UI    // Lautstärke-Overlay einblenden
-            )
+            );
         }
 
         // Listener: Zurück zur vorherigen Activity (MainActivity)
@@ -202,8 +202,7 @@ class DetailActivity : AppCompatActivity() {
 
     /**
      * Wird aufgerufen, wenn die Activity zerstört wird (z. B. beim Zurücknavigieren).
-     * Stoppt die SeekBar-Updates und löst die Bindung zum MusicService,
-     * um Speicherlecks zu vermeiden.
+     * Stoppt die SeekBar-Updates und löst die Bindung zum MusicService
      */
     override fun onDestroy() {
         super.onDestroy()

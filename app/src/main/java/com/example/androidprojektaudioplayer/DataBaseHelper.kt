@@ -115,11 +115,11 @@ class DataBaseHelper(context: Context) :
      * @return Eine alphabetisch sortierte Liste aller Ordnerpfade mit Musikdateien
      */
     fun getAllAudioFolders(context: Context): List<String> {
-        val folders = mutableSetOf<String>()
+        val folders = mutableSetOf<String>();
 
         // Nur den Dateipfad aus dem MediaStore abfragen
-        val projection = arrayOf(MediaStore.Audio.Media.DATA)
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+        val projection = arrayOf(MediaStore.Audio.Media.DATA);
+        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0";
 
         val cursor = context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -127,23 +127,23 @@ class DataBaseHelper(context: Context) :
             selection,
             null,
             null
-        )
+        );
 
         cursor?.use {
-            val dataColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+            val dataColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
 
             while (it.moveToNext()) {
-                val filePath = it.getString(dataColumn)
+                val filePath = it.getString(dataColumn);
                 // Den übergeordneten Ordner des Dateipfads extrahieren
-                val folder = File(filePath).parent
+                val folder = File(filePath).parent;
 
                 if (folder != null) {
-                    folders.add(folder)
+                    folders.add(folder);
                 }
             }
         }
 
-        return folders.sorted()  // Alphabetisch sortiert zurückgeben
+        return folders.sorted();  // Alphabetisch sortiert zurückgeben
     }
 
     /**
@@ -199,9 +199,9 @@ class DataBaseHelper(context: Context) :
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.DISPLAY_NAME,
             MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.ALBUM,  // Album statt GENRE
+            MediaStore.Audio.Media.ALBUM,
             MediaStore.Audio.Media.DATE_ADDED,
-            MediaStore.Audio.Media.DATA  // Vollständiger Dateipfad für Ordner-Filter
+            MediaStore.Audio.Media.DATA
         )
 
         // Nur Dateien laden, die als Musik markiert sind
