@@ -5,7 +5,6 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="?attr/colorSurface"
     android:elevation="8dp"
     android:minWidth="250dp">
 
@@ -14,18 +13,21 @@
         android:layout_height="wrap_content"
         android:text="@string/playlistDescHint"
         android:textSize="16sp"
-        android:paddingBottom="8dp"/>
+        android:textColor="@color/primary_accent"
+        android:paddingBottom="8dp" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/playlistNameHint"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:textColorHint="@color/primary_accent">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etNewPlaylistName"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textColor="@color/primary_accent"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 

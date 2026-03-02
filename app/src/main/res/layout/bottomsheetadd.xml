@@ -20,6 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/playlist"
+            android:textColor="@color/primary_accent"
             style="@style/Widget.Material3.Button.OutlinedButton"/>
 
         <com.google.android.material.button.MaterialButton
@@ -28,6 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/audio"
+            android:textColor="@color/primary_accent"
             style="@style/Widget.Material3.Button.OutlinedButton"/>
 
     </com.google.android.material.button.MaterialButtonToggleGroup>
@@ -45,6 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/playlistMainHint"
+            android:textColorHint="@color/primary_accent"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText

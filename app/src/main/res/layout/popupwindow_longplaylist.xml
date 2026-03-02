@@ -5,7 +5,6 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="8dp"
-    android:background="?attr/colorSurface"
     android:elevation="8dp">
 
     <com.google.android.material.button.MaterialButton
