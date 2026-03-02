@@ -17,43 +17,105 @@ import android.os.IBinder
 import android.os.Looper
 import androidx.core.app.NotificationCompat
 
+/**
+ * Hintergrund-Service, der die Musikwiedergabe verwaltet.
+ * Läuft als Foreground-Service mit einer Benachrichtigung, die Steuerungselemente
+ * (Play/Pause, Vor, Zurück) anzeigt. Speichert regelmäßig den Wiedergabestatus
+ * in SharedPreferences, damit die Wiedergabe nach einem Neustart fortgesetzt werden kann.
+ */
 class MusicService : Service() {
+
+    /** Binder-Instanz für die Kommunikation zwischen Activity und Service. */
     private val binder = MusicBinder()
+
+    /** Der MediaPlayer, der die eigentliche Audiowiedergabe übernimmt. */
     val mediaPlayer = MediaPlayer()
+
+    /** Der aktuell geladene/wiedergegebene Track (null, wenn kein Track geladen ist). */
     var currentTrack: myAudio? = null
+
+    /** Index des aktuellen Tracks in der trackList (-1, wenn kein Track ausgewählt ist). */
     var currentIndex: Int = -1
+
+    /** Die aktuelle Wiedergabeliste, die alle abspielbaren Songs enthält. */
     var trackList: MutableList<myAudio> = mutableListOf()
 
+    /** ID des Notification-Channels für die Musikwiedergabe-Benachrichtigung. */
     private val CHANNEL_ID = "MusicPlayerChannel"
+
+    /** Feste ID der Benachrichtigung, um sie aktualisieren zu können. */
     private val NOTIFICATION_ID = 1
 
-    // Handler für regelmäßiges Speichern
+    /** Handler für das regelmäßige Speichern des Wiedergabestatus. */
     private val saveStateHandler = Handler(Looper.getMainLooper())
+
+    /**
+     * Runnable, das alle 100ms den aktuellen Wiedergabestatus
+     * (Track-ID, Position, Abspielmodus) in SharedPreferences sichert.
+     */
     private val saveStateRunnable = object : Runnable {
         override fun run() {
             savePlaybackState()
-            saveStateHandler.postDelayed(this, 100)  // Jede Sekunde
+            saveStateHandler.postDelayed(this, 100)
         }
     }
 
-    // Callbacks für UI-Updates
+    /**
+     * Callback-Funktion, die aufgerufen wird, wenn ein neuer Track geladen wird.
+     * Wird von der Activity gesetzt, um die UI zu aktualisieren (Titel, Künstler etc.).
+     */
     var onTrackChanged: ((myAudio) -> Unit)? = null
+
+    /**
+     * Callback-Funktion, die aufgerufen wird, wenn sich der Play/Pause-Status ändert.
+     * Wird von der Activity gesetzt, um das Play/Pause-Icon zu aktualisieren.
+     */
     var onPlayStateChanged: ((Boolean) -> Unit)? = null
 
+    /**
+     * Innere Binder-Klasse, die es Activities ermöglicht, eine Referenz auf den
+     * MusicService zu erhalten und dessen öffentliche Methoden aufzurufen.
+     */
     inner class MusicBinder : Binder() {
+        /**
+         * Gibt die Instanz des MusicService zurück.
+         *
+         * @return Die aktuelle MusicService-Instanz
+         */
         fun getService(): MusicService = this@MusicService
     }
 
+    /**
+     * Wird beim Erstellen des Service aufgerufen.
+     * Erstellt den Notification-Channel und startet das regelmäßige Speichern
+     * des Wiedergabestatus.
+     */
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-        saveStateHandler.post(saveStateRunnable)  // Starten
+        saveStateHandler.post(saveStateRunnable)
     }
 
+    /**
+     * Wird aufgerufen, wenn eine Activity sich an den Service bindet.
+     * Gibt den MusicBinder zurück, über den die Activity Zugriff auf den Service erhält.
+     *
+     * @param intent Der Intent, mit dem der Service gebunden wurde
+     * @return Der MusicBinder für die Kommunikation
+     */
     override fun onBind(intent: Intent): IBinder {
         return binder
     }
 
+    /**
+     * Wird aufgerufen, wenn der Service über einen Intent gestartet oder eine Aktion
+     * über die Notification ausgelöst wird. Verarbeitet die Aktionen PLAY_PAUSE, NEXT und PREVIOUS.
+     *
+     * @param intent Der Intent mit der Aktion (z. B. "PLAY_PAUSE", "NEXT", "PREVIOUS")
+     * @param flags  Zusätzliche Flags
+     * @param startId Eindeutige ID für diesen Start-Aufruf
+     * @return START_STICKY, damit der Service nach einem Kill automatisch neu gestartet wird
+     */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             "PLAY_PAUSE" -> togglePlayPause()
@@ -63,10 +125,19 @@ class MusicService : Service() {
         return START_STICKY
     }
 
+    /**
+     * Lädt einen Track in den MediaPlayer, ohne ihn automatisch abzuspielen.
+     * Wird verwendet, um den zuletzt gehörten Track nach einem App-Neustart
+     * wiederherzustellen, ohne dass die Wiedergabe sofort startet.
+     *
+     * @param track Der zu ladende Audiotitel
+     * @param index Der Index des Tracks in der trackList
+     */
     fun loadTrack(track: myAudio, index: Int) {
         currentTrack = track
         currentIndex = index
 
+        // MediaPlayer zurücksetzen und mit den richtigen Audio-Attributen konfigurieren
         mediaPlayer.reset()
         mediaPlayer.setAudioAttributes(
             AudioAttributes.Builder()
@@ -75,17 +146,27 @@ class MusicService : Service() {
                 .build()
         )
         mediaPlayer.setDataSource(applicationContext, Uri.parse(track.audioPath))
-        mediaPlayer.prepare()   // nur vorbereiten, NICHT starten
+        mediaPlayer.prepare()   // Synchron vorbereiten, NICHT starten
 
+        // UI-Callbacks auslösen, damit die Anzeige aktualisiert wird
         onTrackChanged?.invoke(track)
         onPlayStateChanged?.invoke(false)
     }
 
+    /**
+     * Lädt einen Track in den MediaPlayer und startet die Wiedergabe sofort.
+     * Startet den Foreground-Service mit einer Benachrichtigung und speichert
+     * den aktuellen Wiedergabestatus.
+     *
+     * @param track Der abzuspielende Audiotitel
+     * @param index Der Index des Tracks in der trackList
+     */
     fun playTrack(track: myAudio, index: Int) {
         android.util.Log.d("MusicService", "playTrack START: ${track.audioTitle}, isPlaying=${mediaPlayer.isPlaying}")
         currentTrack = track
         currentIndex = index
 
+        // MediaPlayer zurücksetzen und neu konfigurieren
         mediaPlayer.reset()
         mediaPlayer.setAudioAttributes(
             AudioAttributes.Builder()
@@ -96,34 +177,47 @@ class MusicService : Service() {
         mediaPlayer.setDataSource(applicationContext, Uri.parse(track.audioPath))
         mediaPlayer.prepare()
 
+        // Wiedergabe starten
         mediaPlayer.start()
 
-        // Vordergrund-Service starten mit Notification
+        // Foreground-Service mit Notification starten, damit der Service nicht vom System beendet wird
         startForeground(NOTIFICATION_ID, createNotification())
 
-        savePlaybackState()  // State speichern
+        savePlaybackState()
         onTrackChanged?.invoke(track)
         onPlayStateChanged?.invoke(true)
     }
 
+    /**
+     * Pausiert die aktuelle Wiedergabe, aktualisiert die Benachrichtigung
+     * und speichert den Wiedergabestatus. Macht nichts, wenn gerade kein Song spielt.
+     */
     fun pause() {
         if (mediaPlayer.isPlaying) {
             mediaPlayer.pause()
             updateNotification()
-            savePlaybackState()  // State speichern
+            savePlaybackState()
             onPlayStateChanged?.invoke(false)
         }
     }
 
+    /**
+     * Setzt die pausierte Wiedergabe fort, aktualisiert die Benachrichtigung
+     * und speichert den Wiedergabestatus. Macht nichts, wenn der Song bereits läuft.
+     */
     fun resume() {
         if (!mediaPlayer.isPlaying) {
             mediaPlayer.start()
             updateNotification()
-            savePlaybackState()  // State speichern
+            savePlaybackState()
             onPlayStateChanged?.invoke(true)
         }
     }
 
+    /**
+     * Wechselt zwischen Play und Pause:
+     * Wenn der Song läuft, wird er pausiert; wenn er pausiert ist, wird er fortgesetzt.
+     */
     fun togglePlayPause() {
         if (mediaPlayer.isPlaying) {
             pause()
@@ -132,28 +226,41 @@ class MusicService : Service() {
         }
     }
 
+    /**
+     * Springt zum nächsten Song in der Wiedergabeliste.
+     * Am Ende der Liste wird wieder beim ersten Song begonnen (Loop).
+     */
     fun next() {
         if (trackList.isNotEmpty()) {
             val newIndex = if (currentIndex < trackList.size - 1) {
                 currentIndex + 1
             } else {
-                0
+                0  // Am Ende der Liste: Zurück zum Anfang
             }
             playTrack(trackList[newIndex], newIndex)
         }
     }
 
+    /**
+     * Springt zum vorherigen Song in der Wiedergabeliste.
+     * Am Anfang der Liste wird zum letzten Song gesprungen (Loop).
+     */
     fun previous() {
         if (trackList.isNotEmpty()) {
             val newIndex = if (currentIndex > 0) {
                 currentIndex - 1
             } else {
-                trackList.size - 1
+                trackList.size - 1  // Am Anfang der Liste: Zum letzten Song
             }
             playTrack(trackList[newIndex], newIndex)
         }
     }
 
+    /**
+     * Erstellt den Notification-Channel für die Musikwiedergabe-Benachrichtigung.
+     * Wird nur ab Android O (API 26) benötigt, da ältere Versionen keine Channels verwenden.
+     * Die Priorität ist LOW, damit kein störender Ton bei der Benachrichtigung abgespielt wird.
+     */
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -168,7 +275,16 @@ class MusicService : Service() {
         }
     }
 
+    /**
+     * Erstellt die Foreground-Benachrichtigung mit Steuerungselementen.
+     * Die Benachrichtigung zeigt den aktuellen Titel und Künstler an und bietet
+     * drei Aktionen: Vorheriger Song, Play/Pause und Nächster Song.
+     * Ein Klick auf die Benachrichtigung selbst öffnet die MainActivity.
+     *
+     * @return Das fertig konfigurierte Notification-Objekt
+     */
     private fun createNotification(): Notification {
+        // PendingIntent zum Öffnen der App beim Klick auf die Notification
         val openIntent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
@@ -177,6 +293,7 @@ class MusicService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // PendingIntent für die "Vorheriger Song"-Aktion
         val previousIntent = Intent(this, MusicService::class.java).apply {
             action = "PREVIOUS"
         }
@@ -185,6 +302,7 @@ class MusicService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // PendingIntent für die "Play/Pause"-Aktion
         val playPauseIntent = Intent(this, MusicService::class.java).apply {
             action = "PLAY_PAUSE"
         }
@@ -193,6 +311,7 @@ class MusicService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // PendingIntent für die "Nächster Song"-Aktion
         val nextIntent = Intent(this, MusicService::class.java).apply {
             action = "NEXT"
         }
@@ -201,12 +320,14 @@ class MusicService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // Icon je nach Wiedergabestatus wählen (Pause-Icon wenn spielt, Play-Icon wenn pausiert)
         val playPauseIcon = if (mediaPlayer.isPlaying) {
             R.drawable.pause_24px
         } else {
             R.drawable.play_arrow_24px
         }
 
+        // Notification zusammenbauen mit MediaStyle für Musik-Steuerung
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(currentTrack?.audioTitle ?: getString(R.string.app_name))
             .setContentText(currentTrack?.audioArtist ?: "")
@@ -221,15 +342,25 @@ class MusicService : Service() {
             .build()
     }
 
+    /**
+     * Aktualisiert die bestehende Benachrichtigung mit dem aktuellen Wiedergabestatus
+     * (z. B. nach Play/Pause-Wechsel, damit das richtige Icon angezeigt wird).
+     */
     private fun updateNotification() {
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.notify(NOTIFICATION_ID, createNotification())
     }
 
+    /**
+     * Speichert den aktuellen Wiedergabestatus in SharedPreferences.
+     * Gespeichert werden: Track-ID, aktuelle Position, Index in der Liste und
+     * ob der Song gerade abgespielt wird. Damit kann die Wiedergabe nach einem
+     * App-Neustart an der gleichen Stelle fortgesetzt werden.
+     */
     private fun savePlaybackState() {
         if (currentTrack == null) {
             android.util.Log.d("MusicService", "No track to save, skipping")
-            return  // Nichts speichern wenn kein Track läuft
+            return  // Nichts speichern wenn kein Track geladen ist
         }
         val prefs = applicationContext.getSharedPreferences("MusicPlayerPrefs", Context.MODE_PRIVATE)
         prefs.edit().apply {
@@ -237,7 +368,7 @@ class MusicService : Service() {
             putInt("currentPosition", mediaPlayer.currentPosition)
             putInt("currentIndex", currentIndex)
             putBoolean("wasPlaying", mediaPlayer.isPlaying)
-            commit()
+            commit()  // Synchron speichern statt apply(), um Datenverlust zu vermeiden
         }
         android.util.Log.d("MusicService", "SAVED: TrackID=${currentTrack?.audioID}, Position=${mediaPlayer.currentPosition}");
         val verify = prefs.getInt("currentTrackID", -1)
@@ -246,8 +377,13 @@ class MusicService : Service() {
 
     }
 
+    /**
+     * Wird aufgerufen, wenn der Service zerstört wird.
+     * Stoppt das regelmäßige Speichern, sichert den letzten Status,
+     * gibt den MediaPlayer frei und entfernt die Foreground-Benachrichtigung.
+     */
     override fun onDestroy() {
-        saveStateHandler.removeCallbacks(saveStateRunnable)  // Stoppen
+        saveStateHandler.removeCallbacks(saveStateRunnable)
         savePlaybackState()
         mediaPlayer.release()
         stopForeground(STOP_FOREGROUND_REMOVE)

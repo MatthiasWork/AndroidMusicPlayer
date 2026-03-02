@@ -12,41 +12,79 @@ import android.util.Log
 import androidx.core.content.res.TypedArrayUtils.getString
 import java.io.File
 
+/** Tag für Log-Ausgaben, um Meldungen dieser Klasse im Logcat leicht filtern zu können. */
 private val TAG: String = "SoundioMusikPlayer"
+
+/** Aktuelle Versionsnummer der Datenbank. Bei Änderungen am Schema wird diese erhöht. */
 private val DATABASE_VERSION: Int = 1;
+
+/** Name der SQLite-Datenbankdatei auf dem Gerät. */
 private val DATABASE_NAME: String = "Musicman";
 
 //region Tabelle - Audio
+/** Tabellenname für die Audiotitel-Tabelle. */
 public val TABLE_AUDIO: String = "Audiotitel";
+/** Spaltenname für die eindeutige Audio-ID (Primärschlüssel). */
 private val AUDIO_ID: String = "AudioID";
+/** Spaltenname für den Titel des Audiotitels. */
 private val AUDIO_TITLE: String = "AudioTitle";
+/** Spaltenname für den Künstler/Interpreten. */
 private val AUDIO_ARTIST: String = "AudioArtist";
+/** Spaltenname für das Genre/Album. */
 private val AUDIO_GENRE: String = "AudioGenre";
+/** Spaltenname für das Veröffentlichungsdatum. */
 private val AUDIO_RELDATE: String = "AudioRelDate";
+/** Spaltenname für den Dateipfad/Content-URI. */
 private val AUDIO_SAVEPATH: String = "AudioPath";
 //endregion
 
 //region Tabelle - Playlist
+/** Tabellenname für die Playlist-Tabelle. */
 private val TABLE_PLAYLIST: String = "Playlist";
+/** Spaltenname für die eindeutige Playlist-ID (Primärschlüssel). */
 private val PLAYLIST_ID: String = "PlaylistID";
+/** Spaltenname für den Playlist-Titel. */
 private val PLAYLIST_TITLE: String = "PlaylistTitle";
 //endregion
 
 //region Zwischentabelle
+/** Tabellenname für die Verknüpfungstabelle zwischen Audio und Playlist (Many-to-Many). */
 private val TABLE_PLAYAUDIO: String = "AudioTrackPlaylist";
+/** Fremdschlüssel-Spalte, die auf die Audio-ID verweist. */
 private val FKPK_AUDIOPLAYLIST: String = "AudioPlaylist";
+/** Fremdschlüssel-Spalte, die auf die Playlist-ID verweist. */
 private val FKPK_PLAYLISTAUDIO: String = "PlaylistAudio";
 //endregion
 
+/**
+ * SQLiteOpenHelper-Klasse, die die gesamte Datenbank-Logik kapselt.
+ * Verwaltet drei Tabellen: Audio, Playlist und die Zwischentabelle AudioTrackPlaylist.
+ * Bietet CRUD-Operationen (Create, Read, Update, Delete) für Audio und Playlists,
+ * sowie Methoden zum Lesen von MP3-Dateien aus dem MediaStore.
+ *
+ * @param context Der Application- oder Activity-Context für den Datenbankzugriff
+ */
 class DataBaseHelper(context: Context) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+
+    /**
+     * Wird beim ersten Erstellen der Datenbank aufgerufen.
+     * Erstellt die drei Tabellen (Audio, Playlist, Zwischentabelle) und
+     * fügt die Standard-Playlist "Alle" mit ID 1 ein.
+     *
+     * @param db Die SQLite-Datenbankinstanz, auf der die Tabellen erstellt werden
+     */
     override fun onCreate(db: SQLiteDatabase?) {
+        // SQL-Statement für die Audio-Tabelle mit optionalen Spalten für Artist, Genre und RelDate
         val sqlStringCreateTableAudio: String =
             "CREATE TABLE $TABLE_AUDIO($AUDIO_ID INTEGER PRIMARY KEY, $AUDIO_TITLE TEXT, $AUDIO_ARTIST TEXT NULL, $AUDIO_GENRE TEXT NULL, $AUDIO_RELDATE TEXT NULL, $AUDIO_SAVEPATH TEXT);"
 
+        // SQL-Statement für die Playlist-Tabelle
         val sqlStringCreateTablePlaylist: String =
             "CREATE TABLE $TABLE_PLAYLIST($PLAYLIST_ID INTEGER PRIMARY KEY, $PLAYLIST_TITLE TEXT)";
 
+        // SQL-Statement für die Zwischentabelle mit zusammengesetztem Primärschlüssel
+        // und Fremdschlüsseln mit CASCADE-Löschung (Verknüpfungen werden automatisch entfernt)
         val sqlStringCreateTableInter: String =
             "CREATE TABLE $TABLE_PLAYAUDIO($FKPK_AUDIOPLAYLIST INTEGER, $FKPK_PLAYLISTAUDIO INTEGER, " +
                     "PRIMARY KEY($FKPK_AUDIOPLAYLIST, $FKPK_PLAYLISTAUDIO), " +
@@ -57,6 +95,8 @@ class DataBaseHelper(context: Context) :
             db.execSQL(sqlStringCreateTableAudio);
             db.execSQL(sqlStringCreateTablePlaylist);
             db.execSQL(sqlStringCreateTableInter);
+
+            // Standard-Playlist "Alle" anlegen, die alle Songs enthält und nicht löschbar ist
             val container = ContentValues()
             container.put(PLAYLIST_TITLE, "Alle")
             db.insert(TABLE_PLAYLIST, null, container)
@@ -66,12 +106,18 @@ class DataBaseHelper(context: Context) :
         }
     }
 
-
-
-    // Methode, um alle genutzten Ordner zu holen
+    /**
+     * Liest alle Ordner aus, in denen Musikdateien auf dem Gerät gespeichert sind.
+     * Nutzt den MediaStore, um alle Musikdateien zu finden, und extrahiert deren Ordnerpfade.
+     * Duplikate werden automatisch durch die Verwendung eines Sets entfernt.
+     *
+     * @param context Der Context für den Zugriff auf den ContentResolver
+     * @return Eine alphabetisch sortierte Liste aller Ordnerpfade mit Musikdateien
+     */
     fun getAllAudioFolders(context: Context): List<String> {
         val folders = mutableSetOf<String>()
 
+        // Nur den Dateipfad aus dem MediaStore abfragen
         val projection = arrayOf(MediaStore.Audio.Media.DATA)
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
 
@@ -88,6 +134,7 @@ class DataBaseHelper(context: Context) :
 
             while (it.moveToNext()) {
                 val filePath = it.getString(dataColumn)
+                // Den übergeordneten Ordner des Dateipfads extrahieren
                 val folder = File(filePath).parent
 
                 if (folder != null) {
@@ -99,12 +146,24 @@ class DataBaseHelper(context: Context) :
         return folders.sorted()  // Alphabetisch sortiert zurückgeben
     }
 
-    //Methode zum Erneuern der db Version
-    //Nicht verwendet
+    /**
+     * Wird aufgerufen, wenn die Datenbankversion erhöht wird (Schema-Migration).
+     * Aktuell nicht implementiert, da keine Migration nötig ist.
+     *
+     * @param db         Die Datenbankinstanz
+     * @param oldVersion Die alte Versionsnummer
+     * @param newVersion Die neue Versionsnummer
+     */
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
     }
 
-    //Methode, um ForeignKeys zu aktivieren
+    /**
+     * Wird jedes Mal aufgerufen, wenn die Datenbank geöffnet wird.
+     * Aktiviert die Fremdschlüssel-Unterstützung in SQLite, damit CASCADE-Regeln
+     * bei DELETE und UPDATE korrekt funktionieren.
+     *
+     * @param db Die geöffnete Datenbankinstanz
+     */
     override fun onOpen(db: SQLiteDatabase?) {
         super.onOpen(db)
         if (db is SQLiteDatabase) {
@@ -114,23 +173,38 @@ class DataBaseHelper(context: Context) :
 
     //region CRUD für Audio
 
-    //Methode zum Holen der MP3-Dateien
+    /**
+     * Liest alle Musikdateien aus dem MediaStore des Geräts und gibt sie als Liste zurück.
+     * Berücksichtigt dabei den Ordner-Filter aus den SharedPreferences:
+     * Nur Songs aus ausgewählten Ordnern werden zurückgegeben.
+     *
+     * Für jeden gefundenen Song wird ein myAudio-Objekt erstellt mit:
+     * - ID aus dem MediaStore
+     * - Titel (ohne Dateiendung)
+     * - Künstler, Album, Datum
+     * - Content-URI für die Wiedergabe
+     *
+     * @param context Der Context für den Zugriff auf MediaStore und SharedPreferences
+     * @return Liste aller gefilterten Musikdateien als myAudio-Objekte
+     */
     fun getAllMp3Files(context: Context): List<myAudio> {
         val mp3List = mutableListOf<myAudio>()
 
-        // Ausgewählte Ordner laden
+        // Ausgewählte Ordner aus den Einstellungen laden (null = alle Ordner)
         val prefs = context.getSharedPreferences("AppSettings", Context.MODE_PRIVATE)
         val selectedFolders = prefs.getStringSet("selectedFolders", null)
 
+        // Spalten, die aus dem MediaStore abgefragt werden
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.DISPLAY_NAME,
             MediaStore.Audio.Media.ARTIST,
             MediaStore.Audio.Media.ALBUM,  // Album statt GENRE
             MediaStore.Audio.Media.DATE_ADDED,
-            MediaStore.Audio.Media.DATA  // Für Ordner-Filter
+            MediaStore.Audio.Media.DATA  // Vollständiger Dateipfad für Ordner-Filter
         )
 
+        // Nur Dateien laden, die als Musik markiert sind
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
 
         val cursor = context.contentResolver.query(
@@ -138,8 +212,9 @@ class DataBaseHelper(context: Context) :
             projection,
             selection,
             null,
-            "${MediaStore.Audio.Media.DISPLAY_NAME} ASC"
+            "${MediaStore.Audio.Media.DISPLAY_NAME} ASC"  // Alphabetisch nach Dateiname sortieren
         )?.use { cursor ->
+            // Spalten-Indizes ermitteln für schnelleren Zugriff in der Schleife
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
@@ -155,27 +230,32 @@ class DataBaseHelper(context: Context) :
                 val path = cursor.getString(dataColumn)
                 val folder = File(path).parent
 
-                // Ordner-Filter
+                // Ordner-Filter anwenden: Song nur aufnehmen, wenn Ordner ausgewählt ist
+                // oder kein Filter gesetzt ist
                 if (selectedFolders == null || selectedFolders.isEmpty() ||
                     (folder != null && selectedFolders.contains(folder))) {
 
+                    // Datum vom Unix-Timestamp in lesbares Format konvertieren
                     var release = cursor.getString(relDateColumn) ?: context.getString(R.string.notFound)
                     if (release != context.getString(R.string.notFound)) {
                         release = java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.getDefault())
                             .format(java.util.Date(cursor.getLong(relDateColumn) * 1000L))
                     }
 
+                    // Content-URI erstellen, über die der MediaPlayer die Datei abspielen kann
                     val contentUri: Uri = ContentUris.withAppendedId(
                         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                         id.toLong()
                     )
 
+                    // myAudio-Objekt befüllen
                     val audio = myAudio()
                     audio.audioID = id
+                    // Dateiendungen vom Titel entfernen, damit nur der Songname angezeigt wird
                     audio.audioTitle = name.removeSuffix(".mp3").removeSuffix(".wav")
                         .removeSuffix(".m4a").removeSuffix(".aac").removeSuffix(".ogg").removeSuffix(".flac");
                     audio.audioArtist = artist
-                    audio.audioGenre = album  // Album als Genre
+                    audio.audioGenre = album  // Album wird als Genre-Feld verwendet
                     audio.audioPath = contentUri.toString()
                     audio.audioRelDate = release
 
@@ -186,7 +266,12 @@ class DataBaseHelper(context: Context) :
         return mp3List
     }
 
-    //Methode, um die nächste verfügbare ID aus der Datenbank zu bekommen
+    /**
+     * Ermittelt die nächste verfügbare Audio-ID für einen neuen Eintrag.
+     * Sucht die höchste vorhandene ID in der Audio-Tabelle und gibt diese + 1 zurück.
+     *
+     * @return Die nächste freie Audio-ID
+     */
     fun getNextAvailableAudioID(): Int {
         val myQuery: String = "SELECT MAX(${AUDIO_ID}) FROM ${TABLE_AUDIO}";
         val db: SQLiteDatabase = readableDatabase;
@@ -200,7 +285,13 @@ class DataBaseHelper(context: Context) :
         return maxID + 1;
     }
 
-    //Methode, um zu überprüfen, ob eine Audiodatei mit einer ID schon existiert
+    /**
+     * Prüft, ob ein Audioeintrag mit der gegebenen ID bereits in der Datenbank existiert.
+     * Wird verwendet, um doppelte Einträge beim Synchronisieren mit dem MediaStore zu vermeiden.
+     *
+     * @param id Die zu prüfende Audio-ID
+     * @return true, wenn der Eintrag existiert; false, wenn nicht
+     */
     fun audioExists(id: Int): Boolean {
         val query = "SELECT 1 FROM $TABLE_AUDIO WHERE $AUDIO_ID = $id"
         val db = readableDatabase
@@ -210,16 +301,21 @@ class DataBaseHelper(context: Context) :
         return exists
     }
 
-    //Methode, um gelöschte Audiodateien aus der Datenbank zu entfernen
+    /**
+     * Entfernt Audioeinträge aus der Datenbank, die nicht mehr im MediaStore vorhanden sind.
+     * Es werden nur Songs gelöscht, die:
+     * 1. Nicht in der aktuellen MediaStore-Liste enthalten sind
+     * 2. Einen MediaStore-Pfad haben (content://media...)
+     * 3. NICHT in benutzerdefinierten Playlists (also nur in "Alle") vorhanden sind
+     *
+     * @param currentIds Liste der aktuell im MediaStore vorhandenen Audio-IDs
+     */
     fun removeDeletedAudios(currentIds: List<Int>) {
         if (currentIds.isEmpty()) return
 
+        // Platzhalter für die SQL-IN-Klausel erstellen (?, ?, ?, ...)
         val placeholders = currentIds.joinToString(",") { "?" }
 
-        // Nur Songs löschen die:
-        // 1. Nicht in currentIds (nicht mehr gefunden)
-        // 2. MediaStore-Pfad haben
-        // 3. NICHT in Custom-Playlists sind (nur in "Alle")
         val query = "DELETE FROM $TABLE_AUDIO WHERE $AUDIO_ID NOT IN ($placeholders) " +
                 "AND $AUDIO_SAVEPATH LIKE ? " +
                 "AND $AUDIO_ID NOT IN (SELECT $FKPK_AUDIOPLAYLIST FROM $TABLE_PLAYAUDIO WHERE $FKPK_PLAYLISTAUDIO != 1)"
@@ -233,7 +329,12 @@ class DataBaseHelper(context: Context) :
         }
     }
 
-    //Methode für das Hinzufügen eines Eintrags zur Datenbank
+    /**
+     * Fügt einen neuen Audioeintrag in die Audio-Tabelle der Datenbank ein.
+     * Alle Felder des myAudio-Objekts werden als Spaltenwerte übernommen.
+     *
+     * @param myAudio Das myAudio-Objekt mit den Daten des neuen Eintrags
+     */
     fun addAudioToDatabase(myAudio: myAudio) {
         val db: SQLiteDatabase = writableDatabase;
         val container: ContentValues = ContentValues();
@@ -247,12 +348,19 @@ class DataBaseHelper(context: Context) :
         db.insert(TABLE_AUDIO, null, container);
     }
 
-    //Methode für das Löschen eines Eintrags aus der Datenbank
-    //Nicht nötig, weil das Löschen von Audiodateien dem User selbst überlassen ist
+    /**
+     * Löscht einen Audioeintrag und alle zugehörigen Playlist-Verknüpfungen aus der Datenbank.
+     * Zuerst werden die Einträge in der Zwischentabelle entfernt, dann der Audio-Eintrag selbst.
+     *
+     * @param track Der zu löschende Audiotitel
+     * @return true, wenn die Operation durchgeführt wurde
+     */
     fun deleteAudioEntry(track: myAudio): Boolean {
         val db = writableDatabase
         try {
+            // Zuerst alle Verknüpfungen in der Zwischentabelle löschen
             db.execSQL("DELETE FROM $TABLE_PLAYAUDIO WHERE $FKPK_AUDIOPLAYLIST = ${track.audioID}")
+            // Dann den Audioeintrag selbst löschen
             db.execSQL("DELETE FROM $TABLE_AUDIO WHERE $AUDIO_ID = ${track.audioID}")
         } catch (ex: Exception) {
             Log.e(TAG, "Fehler beim Loeschen des Eintrags ${track.audioTitle} aus Datenbank \n $ex")
@@ -260,7 +368,13 @@ class DataBaseHelper(context: Context) :
         return true
     }
 
-    //Methode für das Bearbeiten eines Eintrags aus der Datenbank
+    /**
+     * Aktualisiert die Daten eines bestehenden Audioeintrags in der Datenbank.
+     * Die Audio-ID wird als Identifikator verwendet, alle anderen Felder werden überschrieben.
+     *
+     * @param track Das myAudio-Objekt mit den aktualisierten Daten
+     * @return true, wenn die Operation durchgeführt wurde
+     */
     fun editAudioEntry(track: myAudio): Boolean {
         val db = writableDatabase;
         try {
@@ -277,7 +391,13 @@ class DataBaseHelper(context: Context) :
         return true;
     }
 
-    //Methode, um eine Audiodatei mit einer Playlist zu verknüpfen
+    /**
+     * Erstellt eine Verknüpfung zwischen einem Audiotitel und einer Playlist
+     * in der Zwischentabelle. Dadurch wird der Song der angegebenen Playlist hinzugefügt.
+     *
+     * @param audioID    Die ID des Audiotitels
+     * @param playlistID Die ID der Playlist, zu der der Song hinzugefügt werden soll
+     */
     fun addAudioToPlaylist(audioID: Int, playlistID: Int) {
         val db = writableDatabase
         val container = ContentValues()
@@ -286,7 +406,14 @@ class DataBaseHelper(context: Context) :
         db.insert(TABLE_PLAYAUDIO, null, container);
     }
 
-    //Methode, um eine Verknüpfung zwischen Audio und Playlist zu entfernen
+    /**
+     * Entfernt die Verknüpfung zwischen einem Audiotitel und einer Playlist
+     * aus der Zwischentabelle. Der Song wird damit aus der Playlist entfernt,
+     * bleibt aber in der Audio-Tabelle erhalten.
+     *
+     * @param audioID    Die ID des Audiotitels
+     * @param playlistID Die ID der Playlist, aus der der Song entfernt werden soll
+     */
     fun removeAudioFromPlaylist(audioID: Int, playlistID: Int) {
         writableDatabase.execSQL(
             "DELETE FROM $TABLE_PLAYAUDIO WHERE $FKPK_AUDIOPLAYLIST = $audioID AND $FKPK_PLAYLISTAUDIO = $playlistID"
@@ -296,7 +423,12 @@ class DataBaseHelper(context: Context) :
 
     //region CRUD für Playlist
 
-    //Methode um die nächst verfügbare ID zu bekommen
+    /**
+     * Ermittelt die nächste verfügbare Playlist-ID für einen neuen Eintrag.
+     * Sucht die höchste vorhandene ID in der Playlist-Tabelle und gibt diese + 1 zurück.
+     *
+     * @return Die nächste freie Playlist-ID
+     */
     fun getNextAvailablePlaylistID(): Int {
         val myQuery: String = "SELECT MAX(${PLAYLIST_ID}) FROM ${TABLE_PLAYLIST}";
         val db: SQLiteDatabase = readableDatabase;
@@ -310,7 +442,14 @@ class DataBaseHelper(context: Context) :
         return maxID + 1;
     }
 
-    //Methode, um alle Playlist-IDs eines Audios zu holen
+    /**
+     * Gibt alle Playlist-IDs zurück, denen ein bestimmter Audiotitel zugeordnet ist.
+     * Wird verwendet, um im Playlist-Auswahldialog anzuzeigen, in welchen Playlists
+     * ein Song bereits enthalten ist.
+     *
+     * @param audioID Die ID des Audiotitels
+     * @return Liste der Playlist-IDs, in denen der Song enthalten ist
+     */
     fun getPlaylistIDsForAudio(audioID: Int): List<Int> {
         val ids = mutableListOf<Int>()
         val query = "SELECT $FKPK_PLAYLISTAUDIO FROM $TABLE_PLAYAUDIO WHERE $FKPK_AUDIOPLAYLIST = $audioID"
@@ -324,7 +463,12 @@ class DataBaseHelper(context: Context) :
         return ids
     }
 
-    //Methode, um alle Playlists aus der Datenbank zu holen
+    /**
+     * Liest alle Playlists aus der Datenbank und gibt sie als Liste zurück.
+     * Dazu gehört auch die Standard-Playlist "Alle" mit ID 1.
+     *
+     * @return Liste aller myPlaylist-Objekte aus der Datenbank
+     */
     fun getAllPlaylistsFromDB(): List<myPlaylist> {
         val audioList = mutableListOf<myPlaylist>();
         val query = "SELECT * FROM $TABLE_PLAYLIST";
@@ -343,7 +487,11 @@ class DataBaseHelper(context: Context) :
         return audioList;
     }
 
-    //Methode für das Hinzufügen eines Eintrags zur Datenbank
+    /**
+     * Fügt eine neue Playlist in die Playlist-Tabelle der Datenbank ein.
+     *
+     * @param myPlaylist Das myPlaylist-Objekt mit ID und Titel der neuen Playlist
+     */
     fun addPlaylistToDatabase(myPlaylist: myPlaylist) {
         val db: SQLiteDatabase = writableDatabase;
         val container: ContentValues = ContentValues();
@@ -353,7 +501,14 @@ class DataBaseHelper(context: Context) :
         db.insert(TABLE_PLAYLIST, null, container);
     }
 
-    //Methode, um alle Audiodateien einer Playlist zu holen
+    /**
+     * Gibt alle Audiotitel zurück, die einer bestimmten Playlist zugeordnet sind.
+     * Verwendet einen INNER JOIN zwischen der Audio-Tabelle und der Zwischentabelle,
+     * um nur die Songs der angegebenen Playlist zu liefern.
+     *
+     * @param playlistID Die ID der Playlist, deren Songs geladen werden sollen
+     * @return Liste der myAudio-Objekte, die zur Playlist gehören
+     */
     fun getAudiosByPlaylist(playlistID: Int): List<myAudio> {
         val audioList = mutableListOf<myAudio>()
         val query = "SELECT * FROM $TABLE_AUDIO INNER JOIN $TABLE_PLAYAUDIO ON $TABLE_AUDIO.$AUDIO_ID = $TABLE_PLAYAUDIO.$FKPK_AUDIOPLAYLIST WHERE $TABLE_PLAYAUDIO.$FKPK_PLAYLISTAUDIO = $playlistID";
@@ -374,7 +529,15 @@ class DataBaseHelper(context: Context) :
         return audioList
     }
 
-    //Methode für das Löschen eines Eintrags aus der Datenbank
+    /**
+     * Löscht eine Playlist aus der Datenbank.
+     * Die Standard-Playlist "Alle" (ID 1) kann nicht gelöscht werden.
+     * Durch die CASCADE-Regel in der Zwischentabelle werden alle Verknüpfungen
+     * automatisch mit gelöscht.
+     *
+     * @param playList Die zu löschende Playlist
+     * @return true bei Erfolg, false wenn es die "Alle"-Playlist ist
+     */
     fun deletePlaylistEntry(playList: myPlaylist): Boolean {
         if (playList.playlistID == 1) {
             Log.e(TAG, "Die Alle-Playlist kann nicht gelöscht werden")
@@ -394,7 +557,13 @@ class DataBaseHelper(context: Context) :
         return true;
     }
 
-    //Methode für das Bearbeiten eines Eintrags aus der Datenbank
+    /**
+     * Aktualisiert den Titel einer bestehenden Playlist in der Datenbank.
+     * Die Standard-Playlist "Alle" (ID 1) kann nicht bearbeitet werden.
+     *
+     * @param playList Das myPlaylist-Objekt mit der ID und dem neuen Titel
+     * @return true bei Erfolg, false wenn es die "Alle"-Playlist ist oder ein Fehler auftritt
+     */
     fun editPlaylistEntry(playList: myPlaylist): Boolean {
         if (playList.playlistID == 1) {
             Log.e(TAG, "Die Alle-Playlist kann nicht bearbeitet werden")
