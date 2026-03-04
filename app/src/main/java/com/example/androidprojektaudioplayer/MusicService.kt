@@ -121,8 +121,8 @@ class MusicService : Service() {
             "PLAY_PAUSE" -> togglePlayPause()
             "NEXT" -> next()
             "PREVIOUS" -> previous()
-        }
-        return START_STICKY
+        };
+        return START_NOT_STICKY;
     }
 
     /**

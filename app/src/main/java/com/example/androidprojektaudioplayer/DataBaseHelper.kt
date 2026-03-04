@@ -199,7 +199,7 @@ class DataBaseHelper(context: Context) :
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.DISPLAY_NAME,
             MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.ALBUM,
+            MediaStore.Audio.Media.GENRE,
             MediaStore.Audio.Media.DATE_ADDED,
             MediaStore.Audio.Media.DATA
         )
@@ -218,7 +218,7 @@ class DataBaseHelper(context: Context) :
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-            val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+            val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.GENRE)
             val relDateColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
             val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
 
@@ -261,6 +261,9 @@ class DataBaseHelper(context: Context) :
 
                     mp3List += audio
                 }
+//                for (i in 0 until cursor.columnCount) {
+//                    android.util.Log.i("MediaStoreDebug", "${cursor.getColumnName(i)} = ${cursor.getString(i)}")
+//                }
             }
         }
         return mp3List
