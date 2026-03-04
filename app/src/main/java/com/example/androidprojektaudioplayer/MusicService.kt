@@ -126,6 +126,17 @@ class MusicService : Service() {
     }
 
     /**
+     * Wird aufgerufen, wenn die App aus der Task-Übersicht (Recents) weggewischt wird.
+     * Stoppt die Wiedergabe, entfernt die Notification und beendet den Service.
+     */
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        mediaPlayer.stop()
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
+        super.onTaskRemoved(rootIntent)
+    }
+
+    /**
      * Lädt einen Track in den MediaPlayer, ohne ihn automatisch abzuspielen.
      * Wird verwendet, um den zuletzt gehörten Track nach einem App-Neustart
      * wiederherzustellen, ohne dass die Wiedergabe sofort startet.
