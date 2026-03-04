@@ -174,19 +174,7 @@ class MusicService : Service() {
      */
     fun playTrack(track: myAudio, index: Int) {
         android.util.Log.d("MusicService", "playTrack START: ${track.audioTitle}, isPlaying=${mediaPlayer.isPlaying}")
-        currentTrack = track
-        currentIndex = index
-
-        // MediaPlayer zurücksetzen und neu konfigurieren
-        mediaPlayer.reset()
-        mediaPlayer.setAudioAttributes(
-            AudioAttributes.Builder()
-                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                .setUsage(AudioAttributes.USAGE_MEDIA)
-                .build()
-        )
-        mediaPlayer.setDataSource(applicationContext, Uri.parse(track.audioPath))
-        mediaPlayer.prepare()
+        loadTrack(track, index);
 
         // Wiedergabe starten
         mediaPlayer.start()
@@ -269,7 +257,6 @@ class MusicService : Service() {
 
     /**
      * Erstellt den Notification-Channel für die Musikwiedergabe-Benachrichtigung.
-     * Wird nur ab Android O (API 26) benötigt, da ältere Versionen keine Channels verwenden.
      * Die Priorität ist LOW, damit kein störender Ton bei der Benachrichtigung abgespielt wird.
      */
     private fun createNotificationChannel() {
