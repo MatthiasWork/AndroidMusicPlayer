@@ -173,7 +173,10 @@ class MusicService : Service() {
      * @param index Der Index des Tracks in der trackList
      */
     fun playTrack(track: myAudio, index: Int) {
-        android.util.Log.d("MusicService", "playTrack START: ${track.audioTitle}, isPlaying=${mediaPlayer.isPlaying}")
+        android.util.Log.d(
+            "MusicService",
+            "playTrack START: ${track.audioTitle}, isPlaying=${mediaPlayer.isPlaying}"
+        )
         loadTrack(track, index);
 
         // Wiedergabe starten
@@ -260,17 +263,15 @@ class MusicService : Service() {
      * Die Priorität ist LOW, damit kein störender Ton bei der Benachrichtigung abgespielt wird.
      */
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Music Player",
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = "Music playback controls"
-            }
-            val notificationManager = getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            "Music Player",
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = "Music playback controls"
         }
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager.createNotificationChannel(channel)
     }
 
     /**
@@ -331,11 +332,17 @@ class MusicService : Service() {
             .setContentText(currentTrack?.audioArtist ?: "")
             .setSmallIcon(R.drawable.library_music_40px)
             .setContentIntent(openPendingIntent)
-            .addAction(R.drawable.skip_previous_24px, getString(R.string.previous), previousPendingIntent)
+            .addAction(
+                R.drawable.skip_previous_24px,
+                getString(R.string.previous),
+                previousPendingIntent
+            )
             .addAction(playPauseIcon, getString(R.string.playPause), playPausePendingIntent)
             .addAction(R.drawable.skip_next_24px, getString(R.string.next), nextPendingIntent)
-            .setStyle(androidx.media.app.NotificationCompat.MediaStyle()
-                .setShowActionsInCompactView(0, 1, 2))
+            .setStyle(
+                androidx.media.app.NotificationCompat.MediaStyle()
+                    .setShowActionsInCompactView(0, 1, 2)
+            )
             .setOngoing(true)
             .build()
     }
@@ -360,7 +367,8 @@ class MusicService : Service() {
             android.util.Log.d("MusicService", "No track to save, skipping")
             return  // Nichts speichern wenn kein Track geladen ist
         }
-        val prefs = applicationContext.getSharedPreferences("MusicPlayerPrefs", Context.MODE_PRIVATE)
+        val prefs =
+            applicationContext.getSharedPreferences("MusicPlayerPrefs", Context.MODE_PRIVATE)
         prefs.edit().apply {
             putInt("currentTrackID", currentTrack?.audioID ?: -1)
             putInt("currentPosition", mediaPlayer.currentPosition)
@@ -368,7 +376,10 @@ class MusicService : Service() {
             putBoolean("wasPlaying", mediaPlayer.isPlaying)
             commit()  // Synchron speichern statt apply(), um Datenverlust zu vermeiden
         }
-        android.util.Log.d("MusicService", "SAVED: TrackID=${currentTrack?.audioID}, Position=${mediaPlayer.currentPosition}");
+        android.util.Log.d(
+            "MusicService",
+            "SAVED: TrackID=${currentTrack?.audioID}, Position=${mediaPlayer.currentPosition}"
+        );
         val verify = prefs.getInt("currentTrackID", -1)
         android.util.Log.d("MusicService", "VERIFIED: Read back trackID=$verify")
         android.util.Log.d("MusicService", "Playback speed: ${mediaPlayer.playbackParams.speed}")
