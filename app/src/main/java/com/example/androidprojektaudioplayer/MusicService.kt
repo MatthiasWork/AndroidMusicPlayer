@@ -72,6 +72,7 @@ class MusicService : Service() {
     override fun onTaskRemoved(rootIntent: Intent?) {
         mediaPlayer.stop()
         stopForeground(STOP_FOREGROUND_REMOVE)
+        getSystemService(NotificationManager::class.java).cancel(NOTIFICATION_ID)
         stopSelf()
         super.onTaskRemoved(rootIntent)
     }

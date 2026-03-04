@@ -8,7 +8,6 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
-import java.io.File
 
 private const val TAG = "SoundioMusikPlayer"
 private const val DATABASE_VERSION = 1
@@ -139,7 +138,7 @@ class DataBaseHelper(context: Context) :
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.DISPLAY_NAME,
             MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.ALBUM,
+            MediaStore.Audio.Media.GENRE,
             MediaStore.Audio.Media.DATE_ADDED,
             MediaStore.Audio.Media.RELATIVE_PATH
         )
@@ -154,7 +153,7 @@ class DataBaseHelper(context: Context) :
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-            val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+            val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.GENRE)
             val relDateColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
             val pathColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.RELATIVE_PATH)
 
@@ -162,7 +161,7 @@ class DataBaseHelper(context: Context) :
                 val id = cursor.getInt(idColumn)
                 val name = cursor.getString(nameColumn)
                 val artist = cursor.getString(artistColumn) ?: context.getString(R.string.notFound)
-                val album = cursor.getString(albumColumn) ?: context.getString(R.string.notFound)
+                val genre = cursor.getString(albumColumn) ?: context.getString(R.string.notFound)
                 val relativePath = cursor.getString(pathColumn)?.trimEnd('/') ?: ""
 
                 // Ordner-Filter anwenden
@@ -183,7 +182,7 @@ class DataBaseHelper(context: Context) :
                         audioID = id,
                         audioTitle = name.substringBeforeLast(".", name),
                         audioArtist = artist,
-                        audioGenre = album,
+                        audioGenre = genre,
                         audioPath = contentUri.toString(),
                         audioRelDate = release
                     )

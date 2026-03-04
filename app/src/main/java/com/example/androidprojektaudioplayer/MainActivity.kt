@@ -557,7 +557,7 @@ class MainActivity : MusicBoundActivity() {
             playLibList, this,
             onPlaylistClicked = { playlist ->
                 currentPlaylistID = playlist.playlistID
-                songList = myDB.getAudiosByPlaylist(playlist.playlistID) as MutableList<MyAudio>
+                songList = myDB.getAudiosByPlaylist(playlist.playlistID) as MutableList<myAudio>
                 loadAdapter()
             },
             onPlaylistEdited = { playlist, newName ->
