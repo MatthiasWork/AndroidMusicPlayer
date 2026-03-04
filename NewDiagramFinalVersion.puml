@@ -1,0 +1,315 @@
+@startuml AudioPlayer-Klassendiagramm
+
+' ══════════════════════════════════════════════
+' Layout & Styling
+' ══════════════════════════════════════════════
+skinparam dpi 200
+skinparam pageMargin 10
+skinparam padding 2
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam classFontSize 11
+skinparam classFontStyle bold
+skinparam classAttributeFontSize 9
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 40
+skinparam ranksep 30
+
+' Farben nach Schicht
+skinparam class {
+    BackgroundColor<<ui>> #DCEEFB
+    BorderColor<<ui>> #2E75B6
+    HeaderBackgroundColor<<ui>> #2E75B6
+    FontColor<<ui>> #FFFFFF
+
+    BackgroundColor<<service>> #FFF3CD
+    BorderColor<<service>> #D4A017
+    HeaderBackgroundColor<<service>> #D4A017
+    FontColor<<service>> #FFFFFF
+
+    BackgroundColor<<data>> #D4EDDA
+    BorderColor<<data>> #28A745
+    HeaderBackgroundColor<<data>> #28A745
+    FontColor<<data>> #FFFFFF
+
+    BackgroundColor<<model>> #F3E5F5
+    BorderColor<<model>> #7B1FA2
+    HeaderBackgroundColor<<model>> #7B1FA2
+    FontColor<<model>> #FFFFFF
+
+    BackgroundColor<<util>> #FFE0B2
+    BorderColor<<util>> #E65100
+    HeaderBackgroundColor<<util>> #E65100
+    FontColor<<util>> #FFFFFF
+
+    BackgroundColor<<adapter>> #E3F2FD
+    BorderColor<<adapter>> #1565C0
+    HeaderBackgroundColor<<adapter>> #1565C0
+    FontColor<<adapter>> #FFFFFF
+
+}
+
+skinparam stereotype {
+    CBackgroundColor transparent
+    CBorderColor transparent
+}
+
+' Vertikale Ausrichtung erzwingen
+top to bottom direction
+
+' ══════════════════════════════════════════════
+' Legende
+' ══════════════════════════════════════════════
+legend top left
+  |= Farbe |= Schicht |
+  |<#2E75B6> | **UI-Schicht** (Activities) |
+  |<#1565C0> | **Adapter** (RecyclerView) |
+  |<#D4A017> | **Service-Schicht** |
+  |<#28A745> | **Daten-Schicht** (SQLite) |
+  |<#7B1FA2> | **Datenmodelle** |
+  |<#E65100> | **Hilfsklassen** |
+endlegend
+
+' ══════════════════════════════════════════════
+' Basisklasse
+' ══════════════════════════════════════════════
+abstract class MusicBoundActivity <<ui>> {
+    # musicService : MusicService?
+    # serviceBound : Boolean
+    # handler : Handler
+    # seekBarUpdater : Runnable?
+    --
+    # bindMusicService(alsoStart: Boolean)
+    # createSeekBarUpdater(onUpdate) : Runnable
+    # setupSeekBarListener(seekBar: SeekBar)
+    # showVolumeControl()
+    + {abstract} onMusicServiceConnected()
+    + onDestroy()
+}
+
+' ══════════════════════════════════════════════
+' UI-Schicht
+' ══════════════════════════════════════════════
+class MainActivity <<ui>> {
+    - binding : ActivityMainBinding
+    - myDB : DataBaseHelper
+    - order : Boolean
+    - songList : MutableList<myAudio>
+    - currentPlaylistID : Int
+    - filePickerLauncher : ActivityResultLauncher
+    - currentSortOption : SortOption
+    - permissionLauncher
+    --
+    + onCreate(savedInstanceState: Bundle?)
+    + onMusicServiceConnected()
+    + onResume()
+    .. Setup ..
+    - setupSearchView()
+    - requestPermissions()
+    - setupFilePickerLauncher()
+    - setupPlayerControls()
+    - setupSortControls()
+    - setupFabAddDialog()
+    - setupSettingsButton()
+    .. Wiedergabe & Daten ..
+    - restorePlaybackState()
+    - filterSongs(query: String)
+    + playTrack(track: myAudio)
+    + loadAdapter()
+    - showPlaylistSelector(track: myAudio)
+    + ladeAudioDateien()
+}
+
+enum "SortOption" as SortOption <<ui>> {
+    NAME
+    ARTIST
+    GENRE
+    RELEASE
+}
+
+class DetailActivity <<ui>> {
+    - binding : DetailsBinding
+    --
+    + onCreate(savedInstanceState: Bundle?)
+    + onMusicServiceConnected()
+    - updateTrackUI(track: myAudio)
+    - formatTime(ms: Int) : String
+}
+
+' ══════════════════════════════════════════════
+' Service-Schicht
+' ══════════════════════════════════════════════
+class MusicService <<service>> {
+    + mediaPlayer : MediaPlayer
+    + currentTrack : myAudio?
+    + currentIndex : Int
+    + trackList : MutableList<myAudio>
+    + onTrackChanged : ((myAudio) -> Unit)?
+    + onPlayStateChanged : ((Boolean) -> Unit)?
+    --
+    + onCreate()
+    + onBind(intent: Intent) : IBinder
+    + onStartCommand(intent, flags, startId) : Int
+    + onTaskRemoved(rootIntent: Intent?)
+    .. Wiedergabe ..
+    + loadTrack(track: myAudio, index: Int)
+    + playTrack(track: myAudio, index: Int)
+    + pause()
+    + resume()
+    + togglePlayPause()
+    + next()
+    + previous()
+    .. Notification ..
+    - createNotificationChannel()
+    - createNotification() : Notification
+    - createServicePendingIntent(action, code) : PendingIntent
+    - updateNotification()
+    .. Zustand ..
+    - savePlaybackState()
+    + onDestroy()
+}
+
+class "MusicBinder" as MusicBinder <<service>> {
+    + getService() : MusicService
+}
+
+' ══════════════════════════════════════════════
+' Daten-Schicht
+' ══════════════════════════════════════════════
+class DataBaseHelper <<data>> {
+    + onCreate(db: SQLiteDatabase?)
+    + onUpgrade(db, oldVersion, newVersion)
+    + onOpen(db: SQLiteDatabase?)
+    .. Hilfsmethoden ..
+    - getNextAvailableID(table, column) : Int
+    + getNextAvailableAudioID() : Int
+    + getNextAvailablePlaylistID() : Int
+    + getAllAudioFolders(context) : List<String>
+    .. CRUD Audio ..
+    + getAllMp3Files(context) : List<myAudio>
+    + audioExists(id: Int) : Boolean
+    + removeDeletedAudios(currentIds: List<Int>)
+    + addAudioToDatabase(audio: myAudio)
+    + deleteAudioEntry(track: myAudio) : Boolean
+    + editAudioEntry(track: myAudio) : Boolean
+    .. Audio-Playlist-Verknüpfung ..
+    + addAudioToPlaylist(audioID, playlistID)
+    + removeAudioFromPlaylist(audioID, playlistID)
+    + getPlaylistIDsForAudio(audioID) : List<Int>
+    + getAudiosByPlaylist(playlistID) : List<myAudio>
+    .. CRUD Playlist ..
+    + getAllPlaylistsFromDB() : List<myPlaylist>
+    + addPlaylistToDatabase(playlist: myPlaylist)
+    + deletePlaylistEntry(playlist) : Boolean
+    + editPlaylistEntry(playlist) : Boolean
+}
+
+' ══════════════════════════════════════════════
+' Datenmodelle
+' ══════════════════════════════════════════════
+package "Datenmodelle" as models <<Rectangle>> {
+    class myAudio <<model>> {
+        + audioID : Int
+        + audioTitle : String
+        + audioArtist : String
+        + audioGenre : String
+        + audioPath : String
+        + audioRelDate : String
+        --
+        + toString() : String
+    }
+
+    class myPlaylist <<model>> {
+        + playlistID : Int
+        + playlistTitle : String
+        --
+        + toString() : String
+    }
+
+    class myAudioPlaylist <<model>> {
+        + audioPlaylistFKPK : Int
+        + playlistAudioFKPK : Int
+        --
+        + toString() : String
+    }
+}
+
+' ══════════════════════════════════════════════
+' Hilfsklassen
+' ══════════════════════════════════════════════
+class DatePickerUtils <<util>> {
+    + {static} showDatePicker(context, targetField)
+}
+
+' ══════════════════════════════════════════════
+' Adapter
+' ══════════════════════════════════════════════
+package "RecyclerView Adapter" as adapters <<Rectangle>> {
+
+    class MyAdapterAudio <<adapter>> {
+        + onCreateViewHolder(parent, viewType)
+        + onBindViewHolder(holder, position)
+        - showEditPopup(inflater, holder, track, pos)
+        + getItemCount() : Int
+    }
+
+    class MyAdapterPlaylist <<adapter>> {
+        + onCreateViewHolder(parent, viewType)
+        + onBindViewHolder(holder, position)
+        - showPlaylistPopup(holder, playlist, pos)
+        - showEditPopup(inflater, holder, playlist, pos)
+        + getItemCount() : Int
+    }
+
+    class MyAdapterFolder <<adapter>> {
+        + selectedFolders : MutableSet<String>
+        --
+        + onCreateViewHolder(parent, viewType)
+        + onBindViewHolder(holder, position)
+        + getItemCount() : Int
+    }
+
+    class MyAdapterPlaylistSelect <<adapter>> {
+        + selectedPlaylists : MutableSet<Int>
+        --
+        + onCreateViewHolder(parent, viewType)
+        + onBindViewHolder(holder, position)
+        + getItemCount() : Int
+    }
+}
+
+' ══════════════════════════════════════════════
+' Beziehungen
+' ══════════════════════════════════════════════
+
+' Vererbung
+MusicBoundActivity <|-- MainActivity
+MusicBoundActivity <|-- DetailActivity
+
+' Innere Klassen / Enums
+MusicService +-- MusicBinder
+MainActivity +-- SortOption
+
+' Abhängigkeiten
+MainActivity --> DataBaseHelper : nutzt
+MainActivity --> MusicService : bindet
+MainActivity --> MyAdapterAudio : erstellt
+MainActivity --> MyAdapterPlaylist : erstellt
+MainActivity --> MyAdapterFolder : erstellt
+MainActivity --> MyAdapterPlaylistSelect : erstellt
+MainActivity --> DatePickerUtils : nutzt
+
+DetailActivity --> MusicService : bindet
+
+MusicService --> myAudio : spielt
+
+DataBaseHelper --> myAudio : liest/schreibt
+DataBaseHelper --> myPlaylist : liest/schreibt
+
+MyAdapterAudio --> myAudio : zeigt an
+MyAdapterAudio --> DatePickerUtils : nutzt
+MyAdapterPlaylist --> myPlaylist : zeigt an
+MyAdapterPlaylistSelect --> myPlaylist : zeigt an
+
+@enduml
