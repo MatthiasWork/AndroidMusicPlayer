@@ -26,6 +26,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import java.time.LocalDate
 
 /**
  * Hauptactivity der Audioplayer-App.
@@ -218,7 +219,7 @@ class MainActivity : MusicBoundActivity() {
                                 ?: "Unbekannt"
                         val date =
                             retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE)
-                                ?: ""
+                                ?: LocalDate.now().toString();
 
                         val rootView = currentPathField?.rootView
                         rootView?.findViewById<TextInputEditText>(R.id.etAudioTitle)?.setText(title)
