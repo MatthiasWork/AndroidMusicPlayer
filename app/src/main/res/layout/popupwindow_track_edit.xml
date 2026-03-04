@@ -7,7 +7,7 @@
     android:padding="16dp"
     android:elevation="8dp"
     android:minWidth="250dp"
-    android:backgroundTint="@color/black">
+    android:background="@color/black">
 
     <TextView
         android:layout_width="match_parent"
@@ -27,7 +27,8 @@
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etEditAudioTitle"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -42,7 +43,8 @@
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etEditAudioArtist"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -57,7 +59,8 @@
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etEditAudioGenre"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -76,7 +79,8 @@
             android:id="@+id/etEditAudioDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="date"/>
+            android:inputType="date"
+            android:textColor="@color/white"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 

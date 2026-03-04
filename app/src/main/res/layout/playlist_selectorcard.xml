@@ -4,7 +4,8 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:padding="8dp">
+    android:padding="8dp"
+    android:background="@color/black">
 
     <CheckBox
         android:id="@+id/cbPlaylist"
@@ -16,6 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:textSize="16sp"/>
+        android:textSize="16sp"
+        android:textColor="@color/primary_accent"/>
 
 </LinearLayout>

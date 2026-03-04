@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/black">
 
     <TextView
         android:layout_width="match_parent"
@@ -11,7 +12,8 @@
         android:text="@string/addToPlaylist"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:paddingBottom="8dp"/>
+        android:paddingBottom="8dp"
+        android:textColor="@color/primary_accent"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvPlaylistSelection"

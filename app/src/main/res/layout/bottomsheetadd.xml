@@ -54,7 +54,8 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPlaylistName"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -85,7 +86,8 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etAudioTitle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -99,7 +101,8 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etAudioArtist"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -113,7 +116,8 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etAudioGenre"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -131,7 +135,8 @@
                 android:id="@+id/etAudioDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="date"/>
+                android:inputType="date"
+                android:textColor="@color/white"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -153,7 +158,8 @@
                     android:id="@+id/etAudioPath"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:focusable="false"/>
+                    android:focusable="false"
+                    android:textColor="@color/white"/>
 
             </com.google.android.material.textfield.TextInputLayout>
 
