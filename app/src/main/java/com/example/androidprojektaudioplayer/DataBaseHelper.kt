@@ -130,10 +130,8 @@ class DataBaseHelper(context: Context) :
      */
     fun getAllMp3Files(context: Context): List<myAudio> {
         val mp3List = mutableListOf<myAudio>()
-
         val prefs = context.getSharedPreferences("AppSettings", Context.MODE_PRIVATE)
         val selectedFolders = prefs.getStringSet("selectedFolders", null)
-
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.DISPLAY_NAME,
@@ -142,9 +140,7 @@ class DataBaseHelper(context: Context) :
             MediaStore.Audio.Media.DATE_ADDED,
             MediaStore.Audio.Media.RELATIVE_PATH
         )
-
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
-
         context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             projection, selection, null,

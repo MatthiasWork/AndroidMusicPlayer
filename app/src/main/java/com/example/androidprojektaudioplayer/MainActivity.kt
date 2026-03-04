@@ -54,6 +54,7 @@ class MainActivity : MusicBoundActivity() {
     private var currentPathField: TextInputEditText? = null
 
     enum class SortOption { NAME, ARTIST, GENRE, RELEASE }
+
     private var currentSortOption: SortOption = SortOption.NAME
 
     /**
@@ -158,10 +159,12 @@ class MainActivity : MusicBoundActivity() {
                 setHintTextColor(ContextCompat.getColor(context, R.color.subtext))
             }
             findViewById<ImageView>(androidx.appcompat.R.id.search_mag_icon)?.apply {
-                imageTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.primary_accent))
+                imageTintList =
+                    ColorStateList.valueOf(ContextCompat.getColor(context, R.color.primary_accent))
             }
             findViewById<ImageView>(androidx.appcompat.R.id.search_close_btn)?.apply {
-                imageTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.primary_accent))
+                imageTintList =
+                    ColorStateList.valueOf(ContextCompat.getColor(context, R.color.primary_accent))
             }
         }
     }
@@ -204,18 +207,23 @@ class MainActivity : MusicBoundActivity() {
                         val retriever = MediaMetadataRetriever()
                         retriever.setDataSource(this, uri)
 
-                        val title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
-                            ?: uri.lastPathSegment ?: "Unbekannt"
-                        val artist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
-                            ?: "Unbekannt"
-                        val album = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE)
-                            ?: "Unbekannt"
-                        val date = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE)
-                            ?: ""
+                        val title =
+                            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
+                                ?: uri.lastPathSegment ?: "Unbekannt"
+                        val artist =
+                            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
+                                ?: "Unbekannt"
+                        val album =
+                            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE)
+                                ?: "Unbekannt"
+                        val date =
+                            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE)
+                                ?: ""
 
                         val rootView = currentPathField?.rootView
                         rootView?.findViewById<TextInputEditText>(R.id.etAudioTitle)?.setText(title)
-                        rootView?.findViewById<TextInputEditText>(R.id.etAudioArtist)?.setText(artist)
+                        rootView?.findViewById<TextInputEditText>(R.id.etAudioArtist)
+                            ?.setText(artist)
                         rootView?.findViewById<TextInputEditText>(R.id.etAudioGenre)?.setText(album)
                         rootView?.findViewById<TextInputEditText>(R.id.etAudioDate)?.setText(date)
                         retriever.release()
@@ -266,10 +274,11 @@ class MainActivity : MusicBoundActivity() {
             bottomSheet.behavior.isFitToContents = true
             bottomSheet.behavior.skipCollapsed = true
             bottomSheet.window?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-                ?.setBackgroundResource(android.R.color.transparent)
+                ?.setBackgroundResource(android.R.color.black)
             val view = layoutInflater.inflate(R.layout.bottomsheetadd, null)
 
-            val toggleAddOptions = view.findViewById<MaterialButtonToggleGroup>(R.id.toggleAddOptions)
+            val toggleAddOptions =
+                view.findViewById<MaterialButtonToggleGroup>(R.id.toggleAddOptions)
             val layoutNewPlaylist = view.findViewById<LinearLayout>(R.id.layoutNewPlaylist)
             val layoutNewAudio = view.findViewById<LinearLayout>(R.id.layoutNewAudio)
             val etPlaylistName = view.findViewById<TextInputEditText>(R.id.etPlaylistName)
@@ -283,6 +292,7 @@ class MainActivity : MusicBoundActivity() {
             val btnSaveAudio = view.findViewById<MaterialButton>(R.id.btnSaveAudio)
 
             // Toggle zwischen Playlist- und Audio-Formular
+            //Playlist-Formular ist der Default
             toggleAddOptions.addOnButtonCheckedListener { _, checkedId, isChecked ->
                 if (isChecked) {
                     when (checkedId) {
@@ -290,6 +300,7 @@ class MainActivity : MusicBoundActivity() {
                             layoutNewPlaylist.visibility = View.VISIBLE
                             layoutNewAudio.visibility = View.GONE
                         }
+
                         R.id.btnAddAudio -> {
                             layoutNewPlaylist.visibility = View.GONE
                             layoutNewAudio.visibility = View.VISIBLE
@@ -300,7 +311,7 @@ class MainActivity : MusicBoundActivity() {
 
             // Datei-Browser öffnen
             btnBrowse.setOnClickListener {
-                currentPathField = etAudioPath
+                currentPathField = etAudioPath;
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                     addCategory(Intent.CATEGORY_OPENABLE)
                     type = "audio/*"
@@ -412,7 +423,8 @@ class MainActivity : MusicBoundActivity() {
                             binding.sbProgress.max = service.mediaPlayer.duration
                             binding.sbProgress.progress = service.mediaPlayer.currentPosition
                         }
-                    } catch (_: Exception) {}
+                    } catch (_: Exception) {
+                    }
 
                     binding.btnPause.setIconResource(
                         if (service.mediaPlayer.isPlaying) R.drawable.pause_24px
@@ -422,7 +434,8 @@ class MainActivity : MusicBoundActivity() {
                 }
             } else {
                 // Letzten Zustand aus SharedPreferences laden
-                val prefs = applicationContext.getSharedPreferences("MusicPlayerPrefs", MODE_PRIVATE)
+                val prefs =
+                    applicationContext.getSharedPreferences("MusicPlayerPrefs", MODE_PRIVATE)
                 val trackID = prefs.getInt("currentTrackID", -1)
                 val position = prefs.getInt("currentPosition", 0)
                 if (trackID == -1 || songList.isEmpty()) return
@@ -438,7 +451,8 @@ class MainActivity : MusicBoundActivity() {
                     service.mediaPlayer.seekTo(position)
                     binding.sbProgress.progress = position
                     binding.btnPause.setIconResource(R.drawable.play_arrow_24px)
-                } catch (_: Exception) {}
+                } catch (_: Exception) {
+                }
             }
         }
     }
@@ -475,7 +489,11 @@ class MainActivity : MusicBoundActivity() {
             SortOption.RELEASE -> {
                 val sdf = java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.getDefault())
                 val parseDate = { track: myAudio ->
-                    try { sdf.parse(track.audioRelDate) } catch (_: Exception) { null }
+                    try {
+                        sdf.parse(track.audioRelDate)
+                    } catch (_: Exception) {
+                        null
+                    }
                 }
                 if (order) songList.sortByDescending(parseDate) else songList.sortBy(parseDate)
             }
