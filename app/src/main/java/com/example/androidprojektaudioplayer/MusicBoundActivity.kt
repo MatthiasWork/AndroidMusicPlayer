@@ -44,15 +44,15 @@ abstract class MusicBoundActivity : AppCompatActivity() {
     private val serviceConnection = object : ServiceConnection {
         /** Wird aufgerufen, wenn die Verbindung zum Service hergestellt wurde. */
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val binder = service as MusicService.MusicBinder
-            musicService = binder.getService()
-            serviceBound = true
-            onMusicServiceConnected()
+            val binder = service as MusicService.MusicBinder;
+            musicService = binder.getService();
+            serviceBound = true;
+            onMusicServiceConnected();
         }
 
         /** Wird aufgerufen, wenn die Verbindung unerwartet unterbrochen wird. */
         override fun onServiceDisconnected(name: ComponentName?) {
-            serviceBound = false
+            serviceBound = false;
         }
     }
 
@@ -73,8 +73,8 @@ abstract class MusicBoundActivity : AppCompatActivity() {
      */
     protected fun bindMusicService(alsoStart: Boolean = false) {
         Intent(this, MusicService::class.java).also { intent ->
-            if (alsoStart) startService(intent)
-            bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+            if (alsoStart) startService(intent);
+            bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
         }
     }
 
