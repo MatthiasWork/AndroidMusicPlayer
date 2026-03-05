@@ -200,8 +200,8 @@ class MainActivity : MusicBoundActivity() {
         binding.svSearch.apply {
             // Textfarbe und Hint-Farbe setzen
             findViewById<TextView>(androidx.appcompat.R.id.search_src_text)?.apply {
-                setTextColor(ContextCompat.getColor(context, R.color.primary_accent))
-                setHintTextColor(ContextCompat.getColor(context, R.color.subtext))
+                setTextColor(ContextCompat.getColor(context, R.color.primary_accent));
+                setHintTextColor(ContextCompat.getColor(context, R.color.subtext));
             }
             // Lupe-Icon einfärben
             findViewById<ImageView>(androidx.appcompat.R.id.search_mag_icon)?.apply {

@@ -141,7 +141,7 @@ class MusicService : Service() {
         )
         mediaPlayer.setDataSource(applicationContext, Uri.parse(track.audioPath))
         mediaPlayer.prepare()  // Synchrones Prepare – blockiert kurz, ist aber für lokale Dateien OK
-
+        mediaPlayer.setOnCompletionListener { next() }
         // Activities über den neuen Track informieren
         onTrackChanged?.invoke(track)
         onPlayStateChanged?.invoke(false)
