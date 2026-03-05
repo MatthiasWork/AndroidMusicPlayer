@@ -1,0 +1,208 @@
+@startuml
+left to right direction
+
+enum SortOption {
+  NAME
+  ARTIST
+  GENRE
+  RELEASE
+}
+
+class MainActivity {
+  - binding: ActivityMainBinding
+  - myDB: DataBaseHelper
+  - order: Boolean
+  - songList: MutableList~myAudio~
+  - currentPlaylistID: Int
+  - currentSortOption: SortOption
+  + onCreate(Bundle?)
+  + onMusicServiceConnected()
+  + onResume()
+  - setupSearchView()
+  - setupFilePickerLauncher()
+  - setupPlayerControls()
+  - setupSortControls()
+  - setupFabAddDialog()
+  - setupSettingsButton()
+  - restorePlaybackState()
+  - filterSongs(String)
+  + playTrack(myAudio)
+  + loadAdapter()
+  + ladeAudioDateien()
+}
+
+class DetailActivity {
+  - binding: DetailsBinding
+  + onCreate(Bundle?)
+  + onMusicServiceConnected()
+  - updateTrackUI(myAudio)
+  - formatTime(Int): String
+}
+
+abstract class MusicBoundActivity {
+  # musicService: MusicService?
+  # serviceBound
+  # handler
+  # seekBarUpdater: Runnable?
+  + onMusicServiceConnected()
+  # bindMusicService(Boolean)
+  # createSeekBarUpdater(): Runnable
+  # setupSeekBarListener(SeekBar)
+  # showVolumeControl()
+  + onDestroy()
+}
+
+class MusicService {
+  + mediaPlayer
+  + currentTrack: myAudio?
+  + currentIndex: Int
+  + trackList: MutableList~myAudio~
+  + onTrackChanged: ((myAudio) -> Unit)?
+  + onPlayStateChanged: ((Boolean) -> Unit)?
+  + onCreate()
+  + onBind(Intent): IBinder
+  + onStartCommand(Intent?, Int, Int): Int
+  + loadTrack(myAudio, Int)
+  + playTrack(myAudio, Int)
+  + pause()
+  + resume()
+  + togglePlayPause()
+  + next()
+  + previous()
+  - createNotification(): Notification
+  - updateNotification()
+  - savePlaybackState()
+  + onDestroy()
+}
+
+class "MusicService$MusicBinder" as MusicBinder {
+  + getService(): MusicService
+}
+
+class DataBaseHelper {
+  + onCreate(SQLiteDatabase?)
+  + onUpgrade(SQLiteDatabase?, Int, Int)
+  + getAllAudioFolders(Context): List~String~
+  + getNextAvailableAudioID(): Int
+  + getNextAvailablePlaylistID(): Int
+  + getAllMp3Files(Context): List~myAudio~
+  + audioExists(Int): Boolean
+  + removeDeletedAudios(List~Int~)
+  + addAudioToDatabase(myAudio)
+  + deleteAudioEntry(myAudio): Boolean
+  + editAudioEntry(myAudio): Boolean
+  + addAudioToPlaylist(Int, Int)
+  + removeAudioFromPlaylist(Int, Int)
+  + getPlaylistIDsForAudio(Int): List~Int~
+  + getAllPlaylistsFromDB(): List~myPlaylist~
+  + addPlaylistToDatabase(myPlaylist)
+  + getAudiosByPlaylist(Int): List~myAudio~
+  + deletePlaylistEntry(myPlaylist): Boolean
+  + editPlaylistEntry(myPlaylist): Boolean
+}
+
+class myAudio {
+  + audioID: Int
+  + audioTitle: String
+  + audioArtist: String
+  + audioGenre: String
+  + audioPath: String
+  + audioRelDate: String
+  + toString(): String
+}
+
+class myPlaylist {
+  + playlistID: Int
+  + playlistTitle: String
+  + toString(): String
+}
+
+class myAudioPlaylist {
+  + audioPlaylistFKPK: Int
+  + playlistAudioFKPK: Int
+  + myAudioPlaylist()
+  + myAudioPlaylist(Int, Int)
+  + toString(): String
+}
+
+class "MyAdapterAudio$MyViewHolder" as AdapterAudioVH {
+  + tvTitle: TextView
+  + tvGenre: TextView
+  + tvArtist: TextView
+  + tvDate: TextView
+  + btnMore: ImageButton
+  + card: View
+}
+
+class MyAdapterAudio {
+  + onCreateViewHolder(ViewGroup, Int): MyViewHolder
+  + onBindViewHolder(MyViewHolder, Int)
+  + getItemCount(): Int
+  - showEditPopup(LayoutInflater, MyViewHolder, myAudio, Int)
+}
+
+class "MyAdapterPlaylist$MyViewHolder" as AdapterPlaylistVH {
+  + tvTitle: TextView
+  + card: View
+}
+
+class MyAdapterPlaylist {
+  + onCreateViewHolder(ViewGroup, Int): MyViewHolder
+  + onBindViewHolder(MyViewHolder, Int)
+  + getItemCount(): Int
+  - showPlaylistPopup(MyViewHolder, myPlaylist, Int)
+  - showEditPopup(LayoutInflater, MyViewHolder, myPlaylist, Int)
+}
+
+class "MyAdapterPlaylistSelect$MyViewHolder" as AdapterPlaylistSelectVH {
+  + cbPlaylist: CheckBox
+  + tvPlaylistName: TextView
+}
+
+class MyAdapterPlaylistSelect {
+  + selectedPlaylists
+  + onCreateViewHolder(ViewGroup, Int): MyViewHolder
+  + onBindViewHolder(MyViewHolder, Int)
+  + getItemCount(): Int
+}
+
+class "MyAdapterFolder$MyViewHolder" as AdapterFolderVH {
+  + tvFolderName: TextView
+  + cbFolder: CheckBox
+}
+
+class MyAdapterFolder {
+  + selectedFolders
+  + onCreateViewHolder(ViewGroup, Int): MyViewHolder
+  + onBindViewHolder(MyViewHolder, Int)
+  + getItemCount(): Int
+}
+
+class DatePickerUtils {
+  + showDatePicker(Context, TextInputEditText)
+}
+
+' Inheritance
+MusicBoundActivity <|-- MainActivity
+MusicBoundActivity <|-- DetailActivity
+
+' Inner classes
+MusicService +-- MusicBinder
+MainActivity +-- SortOption
+MyAdapterAudio +-- AdapterAudioVH
+MyAdapterPlaylist +-- AdapterPlaylistVH
+MyAdapterPlaylistSelect +-- AdapterPlaylistSelectVH
+MyAdapterFolder +-- AdapterFolderVH
+
+' Associations
+MainActivity --> DataBaseHelper
+MainActivity --> myAudio
+MusicBoundActivity --> MusicService
+MusicService --> myAudio
+MyAdapterAudio --> myAudio
+MyAdapterPlaylist --> myPlaylist
+MyAdapterPlaylistSelect --> myPlaylist
+myAudioPlaylist --> myAudio
+myAudioPlaylist --> myPlaylist
+
+@enduml
