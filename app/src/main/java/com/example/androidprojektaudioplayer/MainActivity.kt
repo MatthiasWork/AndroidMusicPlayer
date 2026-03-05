@@ -1,6 +1,8 @@
 package com.example.androidprojektaudioplayer
 
 import android.Manifest
+import android.app.DatePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.media.MediaMetadataRetriever
@@ -27,6 +29,7 @@ import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import java.time.LocalDate
+import java.util.Calendar
 
 /**
  * Hauptactivity der Audioplayer-App "Soundio".
@@ -79,7 +82,7 @@ class MainActivity : MusicBoundActivity() {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         if (permissions[Manifest.permission.READ_MEDIA_AUDIO] == true) {
-            ladeAudioDateien()
+            loadAudioFiles()
         }
     }
 
@@ -172,7 +175,7 @@ class MainActivity : MusicBoundActivity() {
      */
     override fun onResume() {
         super.onResume()
-        ladeAudioDateien()
+        loadAudioFiles()
         if (serviceBound) restorePlaybackState()
     }
 
@@ -241,7 +244,7 @@ class MainActivity : MusicBoundActivity() {
             permissionLauncher.launch(permissionsToRequest.toTypedArray())
         } else {
             // Alle Berechtigungen vorhanden – Audiodateien sofort laden
-            ladeAudioDateien()
+            loadAudioFiles()
         }
     }
 
@@ -409,14 +412,25 @@ class MainActivity : MusicBoundActivity() {
                         playlistTitle = name
                     )
                     myDB.addPlaylistToDatabase(playlist)
-                    ladeAudioDateien()  // UI aktualisieren
+                    loadAudioFiles()  // UI aktualisieren
                     bottomSheet.dismiss()
                 }
             }
 
-            // DatePicker-Dialog über die gemeinsame Hilfsmethode öffnen
             view.findViewById<TextInputLayout>(R.id.tilAudioDate).setEndIconOnClickListener {
-                DatePickerUtils.showDatePicker(this, etAudioDate)
+                val calendar = Calendar.getInstance()
+
+                DatePickerDialog(
+                    this,
+                    { _, year, month, day ->
+                        // month ist 0-basiert (Januar = 0), daher +1 für die korrekte Anzeige
+                        val formattedDate = String.format("%02d.%02d.%04d", day, month + 1, year)
+                        etAudioDate.setText(formattedDate)
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
+                ).show()
             }
 
             // Neuen Audiotitel speichern: Pflichtfelder prüfen, in DB einfügen und zur "Alle"-Playlist hinzufügen
@@ -435,7 +449,7 @@ class MainActivity : MusicBoundActivity() {
                     )
                     myDB.addAudioToDatabase(audio)
                     myDB.addAudioToPlaylist(audio.audioID, 1)  // Zur "Alle"-Playlist hinzufügen
-                    ladeAudioDateien()  // UI aktualisieren
+                    loadAudioFiles()  // UI aktualisieren
                     bottomSheet.dismiss()
                 }
             }
@@ -482,7 +496,7 @@ class MainActivity : MusicBoundActivity() {
                 prefs.edit()
                     .putStringSet("selectedFolders", folderAdapter.selectedFolders)
                     .apply()
-                ladeAudioDateien()
+                loadAudioFiles()
                 bottomSheet.dismiss()
             }
 
@@ -624,12 +638,12 @@ class MainActivity : MusicBoundActivity() {
             onTrackClicked = { track -> playTrack(track) },
             onTrackEdited = { track ->
                 myDB.editAudioEntry(track)
-                ladeAudioDateien()
+                loadAudioFiles()
             },
             onAddToPlaylist = { track -> showPlaylistSelector(track) },
             onRemoveFromPlaylist = { track ->
                 myDB.removeAudioFromPlaylist(track.audioID, currentPlaylistID)
-                ladeAudioDateien()
+                loadAudioFiles()
             }
         )
         binding.rvAudioTracks.adapter = adapter
@@ -679,7 +693,7 @@ class MainActivity : MusicBoundActivity() {
                     myDB.removeAudioFromPlaylist(track.audioID, playlistID)
                 }
             }
-            ladeAudioDateien()
+            loadAudioFiles()
             bottomSheet.dismiss()
         }
 
@@ -698,7 +712,7 @@ class MainActivity : MusicBoundActivity() {
      * 5. Playlist-RecyclerView aktualisieren
      * 6. Song-RecyclerView aktualisieren (über loadAdapter)
      */
-    fun ladeAudioDateien() {
+    fun loadAudioFiles() {
         // Schritt 1: Alle Musikdateien aus dem MediaStore lesen
         val mediaList = myDB.getAllMp3Files(this) as MutableList<myAudio>
 
@@ -731,12 +745,12 @@ class MainActivity : MusicBoundActivity() {
                 // Playlist umbenennen
                 playlist.playlistTitle = newName
                 myDB.editPlaylistEntry(playlist)
-                ladeAudioDateien()
+                loadAudioFiles()
             },
             onPlaylistDeleted = { playlist ->
                 // Playlist löschen
                 myDB.deletePlaylistEntry(playlist)
-                ladeAudioDateien()
+                loadAudioFiles()
             }
         )
         binding.rvPlaylists.adapter = playListAdapter

@@ -1,5 +1,6 @@
 package com.example.androidprojektaudioplayer
 
+import android.app.DatePickerDialog
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import java.util.Calendar
 
 /**
  * RecyclerView-Adapter für die Anzeige von Audiotiteln in der Song-Liste.
@@ -96,10 +98,11 @@ class MyAdapterAudio(
             }
 
             // Button: Song aus aktueller Playlist entfernen – delegiert an die MainActivity
-            popupView.findViewById<MaterialButton>(R.id.btnRemoveFromPlaylistPopUp).setOnClickListener {
-                onRemoveFromPlaylist(currentTrack)
-                popupWindow.dismiss()
-            }
+            popupView.findViewById<MaterialButton>(R.id.btnRemoveFromPlaylistPopUp)
+                .setOnClickListener {
+                    onRemoveFromPlaylist(currentTrack)
+                    popupWindow.dismiss()
+                }
 
             // Popup direkt unter dem "Mehr"-Button anzeigen
             popupWindow.showAsDropDown(holder.btnMore)
@@ -131,24 +134,43 @@ class MyAdapterAudio(
         )
 
         // Eingabefelder mit den aktuellen Werten vorausfüllen
-        editView.findViewById<TextInputEditText>(R.id.etEditAudioTitle).setText(currentTrack.audioTitle)
-        editView.findViewById<TextInputEditText>(R.id.etEditAudioArtist).setText(currentTrack.audioArtist)
-        editView.findViewById<TextInputEditText>(R.id.etEditAudioGenre).setText(currentTrack.audioGenre)
-        editView.findViewById<TextInputEditText>(R.id.etEditAudioDate).setText(currentTrack.audioRelDate)
+        editView.findViewById<TextInputEditText>(R.id.etEditAudioTitle)
+            .setText(currentTrack.audioTitle)
+        editView.findViewById<TextInputEditText>(R.id.etEditAudioArtist)
+            .setText(currentTrack.audioArtist)
+        editView.findViewById<TextInputEditText>(R.id.etEditAudioGenre)
+            .setText(currentTrack.audioGenre)
+        editView.findViewById<TextInputEditText>(R.id.etEditAudioDate)
+            .setText(currentTrack.audioRelDate)
 
-        // DatePicker über die gemeinsame Hilfsmethode (DatePickerUtils) öffnen
         editView.findViewById<TextInputLayout>(R.id.tilEditAudioDate)?.setEndIconOnClickListener {
             val dateField = editView.findViewById<TextInputEditText>(R.id.etEditAudioDate)
-            DatePickerUtils.showDatePicker(contextExt, dateField)
+            val calendar = Calendar.getInstance()
+
+            DatePickerDialog(
+                contextExt,
+                { _, year, month, day ->
+                    // month ist 0-basiert (Januar = 0), daher +1 für die korrekte Anzeige
+                    val formattedDate = String.format("%02d.%02d.%04d", day, month + 1, year)
+                    dateField.setText(formattedDate)
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
         }
 
         // Speichern-Button: Änderungen übernehmen und Popup schließen
         editView.findViewById<MaterialButton>(R.id.btnSaveEditAudio).setOnClickListener {
             // Track-Objekt direkt aktualisieren (Referenz in der Liste)
-            currentTrack.audioTitle = editView.findViewById<TextInputEditText>(R.id.etEditAudioTitle).text.toString()
-            currentTrack.audioArtist = editView.findViewById<TextInputEditText>(R.id.etEditAudioArtist).text.toString()
-            currentTrack.audioGenre = editView.findViewById<TextInputEditText>(R.id.etEditAudioGenre).text.toString()
-            currentTrack.audioRelDate = editView.findViewById<TextInputEditText>(R.id.etEditAudioDate).text.toString()
+            currentTrack.audioTitle =
+                editView.findViewById<TextInputEditText>(R.id.etEditAudioTitle).text.toString()
+            currentTrack.audioArtist =
+                editView.findViewById<TextInputEditText>(R.id.etEditAudioArtist).text.toString()
+            currentTrack.audioGenre =
+                editView.findViewById<TextInputEditText>(R.id.etEditAudioGenre).text.toString()
+            currentTrack.audioRelDate =
+                editView.findViewById<TextInputEditText>(R.id.etEditAudioDate).text.toString()
 
             // Callback an die Activity für die Datenbank-Aktualisierung
             onTrackEdited(currentTrack)
